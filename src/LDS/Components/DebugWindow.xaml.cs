@@ -1,0 +1,41 @@
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
+using LDS.Utilities;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace LDS;
+/// <summary>
+/// An empty window that can be used on its own or navigated to within a Frame.
+/// </summary>
+public sealed partial class DebugWindow : Window
+{
+    public DebugLoggerContext DebugLoggerContext { get; }
+
+    public DebugWindow() {
+        InitializeComponent();
+        ExtendsContentIntoTitleBar = true;
+        DebugLoggerContext = Ioc.Default.GetRequiredService<DebugLoggerContext>();
+        DebugLoggerContext.LogReceived += ScrollIntoView;
+    }
+
+    public void OnClose() {
+        DebugLoggerContext.LogReceived -= ScrollIntoView;
+    }
+
+    private void ScrollIntoView(object? sender, (string latestMessage, string LogName)context) {
+        (context.LogName switch {
+            "AppLogs" => AppLogList,
+            "ReceiveLogs" => ReceiveLogList,
+            "SendLogs" => SendLogList,
+            _ => throw new ArgumentException("Invalid log name", nameof(context))
+        }).ScrollIntoView(context.latestMessage);
+    }
+}
+
+public class DebugLogMessage(Guid id, string message) {
+    public Guid Id { get; } = id;
+    public string Message { get; } = message;
+}

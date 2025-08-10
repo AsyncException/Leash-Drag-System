@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="LDS.DebugWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LDS"
+    xmlns:system="using:System"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="DebugWindow">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid>
+        <controls:TabView>
+            <controls:TabViewItem Header="Send Logs">
+                <ListView x:Name="SendLogList" ItemsSource="{x:Bind DebugLoggerContext.SendLogs}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="system:String">
+                            <TextBlock Text="{x:Bind}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls:TabViewItem>
+            <controls:TabViewItem Header="Receive Logs">
+                <ListView x:Name="ReceiveLogList" ItemsSource="{x:Bind DebugLoggerContext.ReceiveLogs}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="system:String">
+                            <TextBlock Text="{x:Bind}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls:TabViewItem>
+            <controls:TabViewItem Header="App Logs">
+                <ListView x:Name="AppLogList" ItemsSource="{x:Bind DebugLoggerContext.AppLogs}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="system:String">
+                            <TextBlock Text="{x:Bind}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls:TabViewItem>
+        </controls:TabView>
+
+    </Grid>
+</Window>

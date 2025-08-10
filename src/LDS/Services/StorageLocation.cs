@@ -4,7 +4,7 @@ using System.IO;
 namespace LDS.Services;
 public static class StorageLocation
 {
-    const string APPNAME = "VRChat OSC Leash";
+    const string APPNAME = "Leash Drag System";
     static string f_appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
     public static string GetAppdataPath() => Path.Combine(f_appdataPath, APPNAME);
 

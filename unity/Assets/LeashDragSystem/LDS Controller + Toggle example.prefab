@@ -92,7 +92,7 @@ MonoBehaviour:
       type: {class: Toggle, ns: VF.Model.Feature, asm: VRCFury}
       data:
         version: 3
-        name: VOL/Leash
+        name: LDS/Leash
         state:
           actions: []
         saved: 1
@@ -135,7 +135,7 @@ MonoBehaviour:
         simpleOutTransition: 1
         defaultSliderValue: 0
         useGlobalParam: 0
-        globalParam: 
+        globalParam: Leash_Enabled
         holdButton: 0
         invertRestLogic: 0
         expandIntoTransition: 1
@@ -147,7 +147,7 @@ MonoBehaviour:
         androidActive: 0
         localOnly: 0
         remoteOnly: 0
-        obj: {fileID: 0}
+        obj: {fileID: 580754816803668000}
         mode: 0
 --- !u!1001 &28867258545964692
 PrefabInstance:
@@ -217,6 +217,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c000355d260c37468339c86ff431d26, type: 3}
+--- !u!1 &580754816803668000 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 606244270368327348, guid: 1c000355d260c37468339c86ff431d26,
+    type: 3}
+  m_PrefabInstance: {fileID: 28867258545964692}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5631268405760294799 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5638724822838901019, guid: 1c000355d260c37468339c86ff431d26,

@@ -27,7 +27,7 @@ public sealed class BackgroundLeashUpdater : IRecipient<EmergencyStopMessage>, I
     private ApplicationSettings Settings { get; }
     private IDebugLogger DebugLogger { get; }
 
-    private readonly CancellationTokenSource f_cancellationTokenSource = new();
+    private CancellationTokenSource f_cancellationTokenSource = new();
 
     private Task f_leashUpdateTask;
 
@@ -146,7 +146,10 @@ public sealed class BackgroundLeashUpdater : IRecipient<EmergencyStopMessage>, I
         f_semaphore.Wait();
 
         try {
-            f_cancellationTokenSource.TryReset();
+            if(!f_cancellationTokenSource.TryReset()){
+                f_cancellationTokenSource = new CancellationTokenSource();
+            }
+
             f_leashUpdateTask = LeashTask(f_cancellationTokenSource.Token);
 
             Log.Information("Started Leash background service");

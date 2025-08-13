@@ -29,15 +29,14 @@ public interface IVRChatOscClient
 public partial class VRChatOscClient : IRecipient<ReconnectClientMessage>, IDisposable, IVRChatOscClient
 {
     private readonly DispatcherQueue f_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    private readonly HttpClient f_client;
     private readonly OSCSender f_sender;
     private readonly OSCReceiver f_receiver;
     private readonly OSCParameters f_leashContext;
     private readonly ApplicationSettings f_settings;
     private readonly IDebugLogger f_debugLogger;
 
-    public VRChatOscClient(HttpClient client, OSCSender sender, OSCReceiver receiver, OSCParameters leashContext, ApplicationSettings settings, IDebugLogger debugLogger) {
-        (f_client, f_sender, f_receiver, f_leashContext, f_settings, f_debugLogger) = (client, sender, receiver, leashContext, settings, debugLogger);
+    public VRChatOscClient(OSCSender sender, OSCReceiver receiver, OSCParameters leashContext, ApplicationSettings settings, IDebugLogger debugLogger) {
+        (f_sender, f_receiver, f_leashContext, f_settings, f_debugLogger) = (sender, receiver, leashContext, settings, debugLogger);
         StrongReferenceMessenger.Default.Register<ReconnectClientMessage>(this);
     }
 
@@ -47,7 +46,6 @@ public partial class VRChatOscClient : IRecipient<ReconnectClientMessage>, IDisp
     /// <returns></returns>
     public async Task InitializeClient() {
         try {
-            f_client.Timeout = TimeSpan.FromMilliseconds(50);
             f_receiver.OnMessageReceived = Received;
 
             f_receiver.Connect(new IPEndPoint(IPAddress.Loopback, f_settings.ReceivePort));

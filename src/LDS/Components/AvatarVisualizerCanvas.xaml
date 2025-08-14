@@ -34,8 +34,7 @@
         <canvas:CanvasControl x:Name="PlotCanvas" Draw="PlotCanvas_Draw" Grid.Row="0" />
         <canvas:CanvasControl x:Name="ScaleCanvas" Draw="ScaleCanvas_Draw" Height="50" Grid.Row="2" />
 
-        <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Padding="10" 
-              Background="#aa0c0c0e" BorderBrush="#1cffffff" BorderThickness="2" CornerRadius="10">
+        <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Padding="12" Margin="8"  CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
             
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />

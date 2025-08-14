@@ -45,7 +45,7 @@
             </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1" Style="{StaticResource ContainerStyle}">
+        <Border Grid.Row="1" Padding="12" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
@@ -59,7 +59,7 @@
 
         </Border>
 
-        <Border Grid.Row="1" Grid.Column="1"  Style="{StaticResource ContainerStyle}">
+        <Border Grid.Row="1" Grid.Column="1" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
             <local:AvatarVisualizerCanvas />
         </Border>
 

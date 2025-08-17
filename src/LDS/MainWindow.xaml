@@ -50,11 +50,23 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
 
                 <local:ValueStatistics Grid.Row="0" />
-                <local:Settings Grid.Row="2"/>
+                <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+
+                    <Grid VerticalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+                        
+                        <local:Settings Grid.Row="1" />
+
+                    </Grid>
+                </ScrollViewer>
             </Grid>
 
         </Border>

@@ -22,7 +22,7 @@
         <Style x:Key="Spacer" TargetType="StackPanel">
             <Setter Property="Margin" Value="0 5"/>
         </Style>
-        
+
     </UserControl.Resources>
 
     <StackPanel>
@@ -49,9 +49,9 @@
         <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
 
         <StackPanel Style="{StaticResource Spacer}" Visibility="{x:Bind ApplicationSettings.GlobalEnableCounter, Converter={StaticResource Visibility}, Mode=OneWay}">
-            
+
             <TextBlock Text="Counter Threshold" />
-            
+
             <StackPanel Orientation="Horizontal">
 
                 <Slider 
@@ -71,13 +71,13 @@
                     />
 
             </StackPanel>
-            
+
         </StackPanel>
 
         <StackPanel Style="{StaticResource Spacer}" Visibility="{x:Bind ApplicationSettings.GlobalEnableLeash, Converter={StaticResource Visibility}, Mode=OneWay}">
-            
+
             <TextBlock Text="Running Upper Threshold" />
-            
+
             <StackPanel Orientation="Horizontal">
 
                 <Slider 
@@ -96,13 +96,13 @@
                     />
 
             </StackPanel>
-            
+
         </StackPanel>
 
         <StackPanel Style="{StaticResource Spacer}" Visibility="{x:Bind ApplicationSettings.GlobalEnableLeash, Converter={StaticResource Visibility}, Mode=OneWay}">
-            
+
             <TextBlock Text="Running Lower Threshold" />
-            
+
             <StackPanel Orientation="Horizontal">
 
                 <Slider 
@@ -121,13 +121,13 @@
                     />
 
             </StackPanel>
-            
+
         </StackPanel>
 
         <StackPanel Style="{StaticResource Spacer}" Visibility="{x:Bind ApplicationSettings.GlobalEnableLeash, Converter={StaticResource Visibility}, Mode=OneWay}">
-            
+
             <TextBlock Text="Stretch Threshold" />
-            
+
             <StackPanel Orientation="Horizontal">
 
                 <Slider 
@@ -149,9 +149,9 @@
         </StackPanel>
 
         <StackPanel Style="{StaticResource Spacer}" Visibility="{x:Bind ApplicationSettings.GlobalEnableLeash, Converter={StaticResource Visibility}, Mode=OneWay}">
-            
+
             <TextBlock Text="Turning Threshold" />
-            
+
             <StackPanel Orientation="Horizontal">
 
                 <Slider 
@@ -172,11 +172,11 @@
         </StackPanel>
 
         <StackPanel Style="{StaticResource Spacer}" Visibility="{x:Bind ApplicationSettings.GlobalEnableLeash, Converter={StaticResource Visibility}, Mode=OneWay}">
-            
+
             <TextBlock Text="Turning Goal" />
-            
+
             <StackPanel Orientation="Horizontal">
-                
+
                 <Slider
                     Value="{x:Bind Thresholds.TurningGoal, Converter={StaticResource Percentage}, Mode=TwoWay}"
                     Minimum="{x:Bind models:ThresholdSettings.PERCENTAGE_MIN, Mode=OneTime}"
@@ -184,23 +184,23 @@
                     StepFrequency="{x:Bind models:ThresholdSettings.PERCENTAGE_STEP, Mode=OneTime}"
                     Width="250"
                     />
-                
+
                 <TextBlock
                     Text="{x:Bind Thresholds.TurningGoal, Converter={StaticResource PercentageText}, Mode=OneWay}"
                     Foreground="{x:Bind models:Theme.TurningGoal, Converter={StaticResource Brush}}"
                     VerticalAlignment="Center"
                     Padding="10 0 10 0"
                     />
-            
+
             </StackPanel>
         </StackPanel>
 
         <StackPanel Style="{StaticResource Spacer}" Visibility="{x:Bind ApplicationSettings.GlobalEnableLeash, Converter={StaticResource Visibility}, Mode=OneWay}">
-            
+
             <TextBlock Text="Turning Multiplier" />
-            
+
             <StackPanel Orientation="Horizontal">
-                
+
                 <Slider
                     Value="{x:Bind Thresholds.TurningMultiplier, Mode=TwoWay}"
                     Minimum="{x:Bind models:ThresholdSettings.TURNING_MIN, Mode=OneTime}"
@@ -208,24 +208,24 @@
                     StepFrequency="{x:Bind models:ThresholdSettings.TURNING_STEP, Mode=OneTime}"
                     Width="250"
                     />
-                
+
                 <TextBlock
                     Text="{x:Bind Thresholds.TurningMultiplier, Converter={StaticResource Round}, Mode=OneWay}"
                     VerticalAlignment="Center"
                     Padding="10 0 10 0"
                     />
-                
+
             </StackPanel>
         </StackPanel>
 
         <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
 
         <StackPanel Style="{StaticResource Spacer}">
-            
+
             <TextBlock Text="Zoom" />
-            
+
             <StackPanel Orientation="Horizontal">
-                
+
                 <Slider
                     Value="{x:Bind Thresholds.Zooming, Mode=TwoWay}"
                     Minimum="{x:Bind models:ThresholdSettings.ZOOMING_MIN, Mode=OneTime}"
@@ -233,24 +233,24 @@
                     StepFrequency="{x:Bind models:ThresholdSettings.ZOOMING_STEP, Mode=OneTime}"
                     Width="250"
                     />
-                
+
                 <TextBlock
                     Text="{x:Bind Thresholds.Zooming, Converter={StaticResource Round}, Mode=OneWay}"
                     VerticalAlignment="Center"
                     Padding="10 0 10 0"
                     />
-                
+
             </StackPanel>
         </StackPanel>
 
         <StackPanel Style="{StaticResource Spacer}">
-            
+
             <Button Content="Emergency Stop" Command="{x:Bind EmergencyStopCommand}" HorizontalAlignment="Stretch" Background="DarkRed">
                 <Button.Resources>
                     <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Red" />
                 </Button.Resources>
             </Button>
-            
+
         </StackPanel>
     </StackPanel>
 </UserControl>

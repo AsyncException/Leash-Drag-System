@@ -1,0 +1,3 @@
+[submodule "submodule/VRChatOSCClient"]
+	path = submodule/VRChatOSCClient
+	url = https://github.com/AsyncException/VRChatOSCClient.git

@@ -22,46 +22,6 @@ public sealed partial class AppSettingsDialog : Page
 
     public AppSettingsDialog() => InitializeComponent();
 
-    [RelayCommand] 
-    public void ResetReceivePort() => Settings.ReceivePort = ApplicationSettings.DEFAULT_RECEIVE_PORT;
-    
-    [RelayCommand] 
-    public void ResetSendPort() => Settings.SendPort = ApplicationSettings.DEFAULT_SEND_PORT;
-
-    [RelayCommand]
-    public async Task RestartClient() {
-        RestartButton.IsEnabled = false;
-
-        // Show spinner
-        RestartProgressRing.Visibility = Visibility.Visible;
-        RestartProgressRing.IsActive = true;
-
-        bool success = false;
-        try {
-             success = StrongReferenceMessenger.Default.Send<ReconnectClientMessage>();
-        }
-        catch {
-            success = false;
-        }
-
-        // Hide spinner
-        RestartProgressRing.IsActive = false;
-        RestartProgressRing.Visibility = Visibility.Collapsed;
-
-        // Show icon
-        if (success) {
-            RestartCheckIcon.Visibility = Visibility.Visible;
-            await Task.Delay(1000);
-            RestartCheckIcon.Visibility = Visibility.Collapsed;
-        }
-        else {
-            RestartFailIcon.Visibility = Visibility.Visible;
-            await Task.Delay(1000);
-            RestartFailIcon.Visibility = Visibility.Collapsed;
-        }
-
-        RestartButton.IsEnabled = true;
-    }
 
     [RelayCommand]
     public static void OpenLogDirectory() {

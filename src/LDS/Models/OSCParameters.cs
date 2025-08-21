@@ -1,20 +1,17 @@
-﻿// Copyright (c) VolcanicArts. Licensed under the GPL-3.0 License.
-// See the LICENSE file in the repository root for full license text.
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.ComponentModel;
-using LDS.Utilities;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Dispatching;
+using System.Collections.Generic;
+using VRChatOSCClient.OSCConnections;
+using Windows.Devices.SerialCommunication;
+using Windows.Foundation.Collections;
 
 namespace LDS.Services.VRChatOSC;
 
 /// <summary>
 /// This class holds the parameters received from VRChat OSC.
 /// </summary>
-public partial class OSCParameters(IDebugLogger debugLogger) : ObservableObject
+public partial class OSCParameters : ObservableObject
 {
-    private readonly IDebugLogger f_debugLogger = debugLogger;
-
     public const string ENABLED = "Leash_Enabled";
     public const string IS_GRABBED = "Leash_IsGrabbed";
     public const string ANGLE = "Leash_Angle";
@@ -28,7 +25,8 @@ public partial class OSCParameters(IDebugLogger debugLogger) : ObservableObject
     public const string MINUTE = "timer_minute";
     public const string SECOND = "timer_second";
 
-    [ObservableProperty] public partial bool IsGrabbed { get; set; }
+    [ObservableProperty] public partial bool Enabled { get; set; } = false;
+    [ObservableProperty] public partial bool IsGrabbed { get; set; } = false;
     [ObservableProperty] public partial float Angle { get; set; } = 0f;
     [ObservableProperty] public partial float Stretch { get; set; } = 0f;
     [ObservableProperty] public partial float FrontDistance { get; set; } = 0f;
@@ -36,16 +34,27 @@ public partial class OSCParameters(IDebugLogger debugLogger) : ObservableObject
     [ObservableProperty] public partial float RightDistance { get; set; } = 0f;
     [ObservableProperty] public partial float LeftDistance { get; set; } = 0f;
 
-    protected override void OnPropertyChanged(PropertyChangedEventArgs e) {
-        base.OnPropertyChanged(e);
+    public bool UpdateParameter(DispatcherQueue dispatcherQueue, ParameterChangedMessage message) {
+        return message.Name switch {
+            ENABLED => dispatcherQueue.TryEnqueue(() => Enabled = (bool)message.Value),
+            IS_GRABBED => dispatcherQueue.TryEnqueue(() => IsGrabbed = (bool)message.Value),
+            ANGLE => dispatcherQueue.TryEnqueue(() => Angle = (float)message.Value),
+            STRETCH => dispatcherQueue.TryEnqueue(() => Stretch = (float)message.Value),
+            FRONT_COLLIDER => dispatcherQueue.TryEnqueue(() => FrontDistance = (float)message.Value),
+            BACK_COLLIDER => dispatcherQueue.TryEnqueue(() => BackDistance = (float)message.Value),
+            RIGHT_COLLIDER => dispatcherQueue.TryEnqueue(() => RightDistance = (float)message.Value),
+            LEFT_COLLIDER => dispatcherQueue.TryEnqueue(() => LeftDistance = (float)message.Value),
+            _ => true, // Ignore unknown parameters
+        };
+    }
 
-        double angle = Math.Round(Angle, 2);
-        double stretch = Math.Round(Stretch, 2);
-        double front = Math.Round(FrontDistance, 2);
-        double back = Math.Round(BackDistance, 2);
-        double right = Math.Round(RightDistance, 2);
-        double left = Math.Round(LeftDistance, 2);
+    public void UpdateParameters(DispatcherQueue dispatcherQueue, Dictionary<string, object?> parameters) {
+        foreach(KeyValuePair<string, object?> pair in parameters) {
+            if(pair.Value is null) {
+                continue;
+            }
 
-        f_debugLogger.LogReceive($$"""{"IsGrabbed": {{IsGrabbed}}, "Angle": {{angle}}, "Stretch": {{stretch}}, "Front": {{front}}, "Back": {{back}}, "Right": {{right}}, "Left": {{left}}}""");
+            UpdateParameter(dispatcherQueue, new ParameterChangedMessage(pair.Key, pair.Value));
+        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using LiteDB;
-using Serilog;
 using LDS.Models;
-using LDS.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace LDS.Services;
 
@@ -14,17 +13,20 @@ public interface IApplicationSettingsProvider
     ApplicationSettings GetSettings();
 }
 
-public class ApplicationSettingsProvider(ILiteDatabase database, IDebugLogger debugLogger) : IApplicationSettingsProvider
+public class ApplicationSettingsProvider(ILiteDatabase database, ILogger<ApplicationSettingsProvider> logger) : IApplicationSettingsProvider
 {
-    private readonly IDebugLogger f_debugLogger = debugLogger;
-    private readonly ILiteCollection<ApplicationSettings> f_collection = database.GetCollection<ApplicationSettings>(nameof(ApplicationSettings));
+    private readonly ILogger<ApplicationSettingsProvider> _logger = logger;
+    private readonly ILiteCollection<ApplicationSettings> _collection = database.GetCollection<ApplicationSettings>(nameof(ApplicationSettings));
 
     public ApplicationSettings GetSettings() {
-        if (!f_collection.Find(e => e.Id == ThresholdSettings.Target).TryGetFirst(out ApplicationSettings? settings)) {
-            f_collection.Insert(settings ??= new());
+        ApplicationSettings? settings = _collection.FindById(ThresholdSettings.Target);
+
+        if (settings is null) {
+            settings = new();
+            _collection.Insert(settings);
         }
 
-        f_debugLogger.LogApp($"Fetched: {System.Text.Json.JsonSerializer.Serialize(settings)}");
+        _logger.LogDebug("Fetched ApplicationSettings as: {@settings}", settings);
         
         settings.PropertyChanged += (sender, args) => SaveChanges(settings);
 
@@ -32,8 +34,7 @@ public class ApplicationSettingsProvider(ILiteDatabase database, IDebugLogger de
     }
 
     private void SaveChanges(ApplicationSettings settings) {
-        f_collection?.Update(settings);
-        Log.Information("Saved changes to ApplicationSettings");
-        f_debugLogger.LogApp($"Saved: {System.Text.Json.JsonSerializer.Serialize(settings)}");
+        _collection?.Update(settings);
+        _logger.LogDebug("Saved changes to ApplicationSettings");
     }
 }

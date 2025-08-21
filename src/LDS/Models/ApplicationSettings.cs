@@ -31,11 +31,5 @@ public partial class ApplicationSettings : ObservableObject
         }
     }
 
-    public const int DEFAULT_SEND_PORT = 9000;
-    [ObservableProperty] public partial int SendPort { get; set; } = DEFAULT_SEND_PORT;
-
-    public const int DEFAULT_RECEIVE_PORT = 9001;
-    [ObservableProperty] public partial int ReceivePort { get; set; } = DEFAULT_RECEIVE_PORT;
-
     [ObservableProperty] public partial bool EnableToggleOnNullInput { get; set; } = false;
 }

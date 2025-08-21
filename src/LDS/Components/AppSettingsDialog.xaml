@@ -30,43 +30,6 @@
 
         <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
 
-        <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Grid.Column="1">
-                <TextBlock Text="Receive port" TextAlignment="Center" Margin="0 0 0 5" />
-                <StackPanel Orientation="Horizontal">
-                    <NumberBox Minimum="0" Maximum="65535" Value="{x:Bind Settings.ReceivePort, Mode=TwoWay}" SpinButtonPlacementMode="Inline" />
-                    <Button Command="{x:Bind ResetReceivePortCommand}">
-                        <FontIcon Glyph="&#xE777;" />
-                    </Button>
-                </StackPanel>
-            </StackPanel>
-
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Grid.Column="3">
-                <TextBlock Text="Send port" TextAlignment="Center" Margin="0 0 0 5" />
-                <StackPanel Orientation="Horizontal">
-
-                    <NumberBox Minimum="0" Maximum="65535" Value="{x:Bind Settings.SendPort, Mode=TwoWay}" SpinButtonPlacementMode="Inline" />
-                    <Button Command="{x:Bind ResetSendPortCommand}">
-                        <FontIcon Glyph="&#xE777;" />
-                    </Button>
-                </StackPanel>
-            </StackPanel>
-        </StackPanel>
-
-        <TextBlock Text="After changing the ports use the button below to apply them" Margin="0 10 0 5" HorizontalAlignment="Stretch" TextAlignment="Center" />
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button x:Name="RestartButton" Content="Restart Connection" Command="{x:Bind RestartClientCommand}" HorizontalAlignment="Center" Margin="25 0 0 0" />
-
-            <Grid Width="24" Height="24" Margin="10 0 0 0">
-                <ProgressRing x:Name="RestartProgressRing" IsActive="False" Visibility="Collapsed" Width="24" Height="24"/>
-                <FontIcon x:Name="RestartCheckIcon" Glyph="&#xE8FB;" Visibility="Collapsed" Foreground="Green" Width="24" Height="24"/>
-                <FontIcon x:Name="RestartFailIcon" Glyph="&#xE783;" Visibility="Collapsed" Foreground="Red" Width="24" Height="24"/>
-            </Grid>
-        </StackPanel>
-
-        <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
-
         <ToggleSwitch Header="Allow Leash toggle" IsOn="{x:Bind Settings.EnableToggleOnNullInput, Mode=TwoWay}" HorizontalAlignment="Center" />
         <TextBlock TextWrapping="WrapWholeWords" Text="This option allows the app to toggle off and on the leash when the distance to the colliders is 0. This can happen for quite a number of reasons and toggling it ususally solves it." TextAlignment="Center" />
 

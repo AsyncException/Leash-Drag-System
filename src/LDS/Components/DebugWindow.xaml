@@ -18,7 +18,7 @@
     <Grid>
         <controls:TabView>
             <controls:TabViewItem Header="Send Logs">
-                <ListView x:Name="SendLogList" ItemsSource="{x:Bind DebugLoggerContext.SendLogs}">
+                <ListView x:Name="SendLogList" >
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="system:String">
                             <TextBlock Text="{x:Bind}" />
@@ -27,7 +27,7 @@
                 </ListView>
             </controls:TabViewItem>
             <controls:TabViewItem Header="Receive Logs">
-                <ListView x:Name="ReceiveLogList" ItemsSource="{x:Bind DebugLoggerContext.ReceiveLogs}">
+                <ListView x:Name="ReceiveLogList" >
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="system:String">
                             <TextBlock Text="{x:Bind}" />
@@ -36,7 +36,7 @@
                 </ListView>
             </controls:TabViewItem>
             <controls:TabViewItem Header="App Logs">
-                <ListView x:Name="AppLogList" ItemsSource="{x:Bind DebugLoggerContext.AppLogs}">
+                <ListView x:Name="AppLogList" >
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="system:String">
                             <TextBlock Text="{x:Bind}" />

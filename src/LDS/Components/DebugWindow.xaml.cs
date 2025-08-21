@@ -1,28 +1,23 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
-using LDS.Utilities;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace LDS;
+
+//TODO: This whole mechanism needs to be rewritten. Looking into making a custom serilog.
+
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class DebugWindow : Window
 {
-    public DebugLoggerContext DebugLoggerContext { get; }
 
     public DebugWindow() {
         InitializeComponent();
         ExtendsContentIntoTitleBar = true;
-        DebugLoggerContext = Ioc.Default.GetRequiredService<DebugLoggerContext>();
-        DebugLoggerContext.LogReceived += ScrollIntoView;
     }
 
     public void OnClose() {
-        DebugLoggerContext.LogReceived -= ScrollIntoView;
     }
 
     private void ScrollIntoView(object? sender, (string latestMessage, string LogName)context) {

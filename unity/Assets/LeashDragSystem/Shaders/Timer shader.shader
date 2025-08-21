@@ -1,4 +1,4 @@
-Shader "VRChatOSCLeash/Counter"
+Shader "Leash Drag System/Counter"
 {
     Properties
     {

@@ -68,6 +68,8 @@ public partial class App : Application
 
         Ioc.Default.ConfigureServices(AppHost.Services);
 
+        AppHost.Start();
+
         InitializeComponent();
     }
 

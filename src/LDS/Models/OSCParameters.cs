@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
+using System.Collections.Generic;
 using VRChatOSCClient.OSCConnections;
+using Windows.Devices.SerialCommunication;
+using Windows.Foundation.Collections;
 
 namespace LDS.Services.VRChatOSC;
 
@@ -23,7 +26,7 @@ public partial class OSCParameters : ObservableObject
     public const string SECOND = "timer_second";
 
     [ObservableProperty] public partial bool Enabled { get; set; } = false;
-    [ObservableProperty] public partial bool IsGrabbed { get; set; }
+    [ObservableProperty] public partial bool IsGrabbed { get; set; } = false;
     [ObservableProperty] public partial float Angle { get; set; } = 0f;
     [ObservableProperty] public partial float Stretch { get; set; } = 0f;
     [ObservableProperty] public partial float FrontDistance { get; set; } = 0f;
@@ -43,5 +46,15 @@ public partial class OSCParameters : ObservableObject
             LEFT_COLLIDER => dispatcherQueue.TryEnqueue(() => LeftDistance = (float)message.Value),
             _ => true, // Ignore unknown parameters
         };
+    }
+
+    public void UpdateParameters(DispatcherQueue dispatcherQueue, Dictionary<string, object?> parameters) {
+        foreach(KeyValuePair<string, object?> pair in parameters) {
+            if(pair.Value is null) {
+                continue;
+            }
+
+            UpdateParameter(dispatcherQueue, new ParameterChangedMessage(pair.Key, pair.Value));
+        }
     }
 }

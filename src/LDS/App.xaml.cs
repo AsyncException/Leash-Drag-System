@@ -39,12 +39,10 @@ public partial class App : Application
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)
-            .MinimumLevel.Debug()
-#if DEBUG
-            .WriteTo.Debug()
-#endif
-            .WriteTo.File(StorageLocation.GetLogFile(), restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 5)
             .CreateLogger();
+
+        builder.Logging.AddSerilog();
+        builder.Services.AddSerilog();
 
         builder.Services.AddVRChatClient("Leash Drag System", IPAddress.Loopback);
         builder.Services.AddHostedService<BackgroundUpdater>();

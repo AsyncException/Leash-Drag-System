@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using VRChatOSCClient;
@@ -17,7 +18,7 @@ namespace LDS.Services;
 
 internal partial class BackgroundUpdater : BackgroundService, IRecipient<EmergencyStopMessage>, IRecipient<StartLeashUpdater>, IRecipient<StopLeashUpdater>, IRecipient<StartTimerUpdater>, IRecipient<StopTimerUpdater>
 {
-    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread(); // TODO: Most likely needed later in the UpdateParameters. After testing either implement of remove
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     private readonly ILogger _logger;
     private readonly IVRChatClient _client;
@@ -57,7 +58,8 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
         ApplicationSettings = applicationSettings;
         ThresholdSettings = thresholdSettings;
 
-        _client.OnMessageReceived += UpdateParameters;
+        _client.OnParameterReceived += UpdateParameters;
+        _client.OnAvatarChanged += UpdateParameters;
         WeakReferenceMessenger.Default.RegisterAll(this);
     }
 
@@ -67,9 +69,9 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     /// <param name="stoppingToken"></param>
     /// <returns></returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-        MessageFilter filter = new() { ReceiveParameterChanges = true };
+        MessageFilter filter = new();
         filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
-        await _client.StartAsync(filter, stoppingToken).ConfigureAwait(false);
+        await _client.StartAndWaitAsync(filter, stoppingToken).ConfigureAwait(false);
 
         if (ApplicationSettings.GlobalEnableLeash) {
             _leashTask = LeashTask();
@@ -102,13 +104,15 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     /// <param name="message"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    private Task UpdateParameters(Message message, CancellationToken token) {
-        if(message is ParameterChangedMessage parameterChange) {
-            Parameters.UpdateParameter(_dispatcherQueue, parameterChange);
-        }
-
+    private Task UpdateParameters(ParameterChangedMessage message, CancellationToken token) {
+        Parameters.UpdateParameter(_dispatcherQueue, message);
         return Task.CompletedTask;
     }
+
+    private Task UpdateParameters(Dictionary<string, object?> parameters, CancellationToken token) {
+        Parameters.UpdateParameters(_dispatcherQueue, parameters);
+        return Task.CompletedTask;
+    }   
 
     #region Leash stuff
     /// <summary>
@@ -124,7 +128,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
         try {
             using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(50));
             while(await timer.WaitForNextTickAsync(_leashCts.Token)) {
-                if(ThresholdSettings.LeashEnabled) {
+                if(!ThresholdSettings.LeashEnabled) {
                     continue;
                 }
 
@@ -171,9 +175,9 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private async Task ResetLeash() {
         if(_retryCount < 3) {
             _client.SendParameterChange(OSCParameters.ENABLED, false);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromSeconds(2));
             _client.SendParameterChange(OSCParameters.ENABLED, true);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromSeconds(2));
             _retryCount++;
             _logger.LogInformation("Leash reset attempt {attempt}", _retryCount);
         }

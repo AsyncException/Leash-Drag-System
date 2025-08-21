@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using FastOSC;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -9,7 +8,10 @@ using System.Net.Http;
 using LDS.Models;
 using LDS.Services;
 using LDS.Services.VRChatOSC;
-using LDS.Utilities;
+using Microsoft.Extensions.Hosting;
+using VRChatOSCClient;
+using System.Net;
+using LDS.TimerSystem;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -21,7 +23,8 @@ namespace LDS;
 /// </summary>
 public partial class App : Application
 {
-    private Window? f_window;
+    private Window? Window { get; set; }
+    private IHost AppHost { get; }
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -32,7 +35,10 @@ public partial class App : Application
 
         StorageLocation.EnsureAppdataPathExists();
 
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder();
+
         Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
             .MinimumLevel.Debug()
 #if DEBUG
             .WriteTo.Debug()
@@ -40,33 +46,27 @@ public partial class App : Application
             .WriteTo.File(StorageLocation.GetLogFile(), restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 5)
             .CreateLogger();
 
-        Ioc.Default.ConfigureServices(new ServiceCollection()
-            .AddTransient<IBackDropController, BackDropController>()
-            .AddSingleton<ILiteDatabase>(s => new LiteDatabase(StorageLocation.GetDatabasePath()))
-            .AddSingleton<DebugLoggerContext>()
-            .AddTransient<IDebugLogger, DebugLogger>()
+        builder.Services.AddVRChatClient("Leash Drag System", IPAddress.Loopback);
+        builder.Services.AddHostedService<BackgroundUpdater>();
 
-            .AddSingleton<HttpClient>()
-            .AddSingleton<OSCSender>()
-            .AddSingleton<OSCReceiver>()
-            .AddSingleton<IVRChatOscClient, VRChatOscClient>()
+        builder.Services.AddTransient<IBackDropController, BackDropController>();
+        builder.Services.AddSingleton<ILiteDatabase>(s => new LiteDatabase(StorageLocation.GetDatabasePath()));
 
-            .AddSingleton<IBackgroundLeashUpdater, BackgroundLeashUpdater>()
-            .AddSingleton<IBackgroundTimerUpdater, BackgroundTimerUpdater>()
+        builder.Services.AddSingleton<IApplicationSettingsProvider, ApplicationSettingsProvider>();
+        builder.Services.AddSingleton<ApplicationSettings>(services => services.GetRequiredService<IApplicationSettingsProvider>().GetSettings());
 
-            .AddSingleton<IApplicationSettingsProvider, ApplicationSettingsProvider>()
-            .AddSingleton<ApplicationSettings>(services => services.GetRequiredService<IApplicationSettingsProvider>().GetSettings())
+        builder.Services.AddSingleton<IThresholdSettingsProvider, ThresholdSettingsProvider>();
+        builder.Services.AddSingleton<ThresholdSettings>(services => services.GetRequiredService<IThresholdSettingsProvider>().GetSettings());
 
-            .AddSingleton<IThresholdSettingsProvider, ThresholdSettingsProvider>()
-            .AddSingleton<ThresholdSettings>(services => services.GetRequiredService<IThresholdSettingsProvider>().GetSettings())
+        builder.Services.AddSingleton<ITimeDataProvider, TimeDataProvider>();
+        builder.Services.AddSingleton<TimerStorage>(service => service.GetRequiredService<ITimeDataProvider>().GetTime());
 
-            .AddSingleton<ITimeProvider, Services.TimeProvider>()
+        builder.Services.AddSingleton<OSCParameters>();
+        builder.Services.AddSingleton<MovementData>();
 
-            .AddSingleton<OSCParameters>()
-            .AddSingleton<LeashData>()
-            .AddSingleton<TimerData>()
+        AppHost = builder.Build();
 
-            .BuildServiceProvider());
+        Ioc.Default.ConfigureServices(AppHost.Services);
 
         InitializeComponent();
     }
@@ -75,5 +75,8 @@ public partial class App : Application
     /// Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args) => (f_window = new MainWindow()).Activate();
+    protected override void OnLaunched(LaunchActivatedEventArgs args) {
+        Window = new MainWindow();
+        Window.Activate();
+    }
 }

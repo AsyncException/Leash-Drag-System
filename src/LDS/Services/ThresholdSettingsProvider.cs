@@ -1,7 +1,6 @@
-﻿using LiteDB;
-using Serilog;
-using LDS.Models;
-using LDS.Utilities;
+﻿using LDS.Models;
+using LiteDB;
+using Microsoft.Extensions.Logging;
 
 namespace LDS.Services;
 
@@ -10,17 +9,20 @@ public interface IThresholdSettingsProvider
     ThresholdSettings GetSettings();
 }
 
-public class ThresholdSettingsProvider(ILiteDatabase database, IDebugLogger debugLogger) : IThresholdSettingsProvider
+public class ThresholdSettingsProvider(ILiteDatabase database, ILogger<ThresholdSettingsProvider> logger) : IThresholdSettingsProvider
 {
-    private readonly IDebugLogger f_debugLogger = debugLogger;
-    private readonly ILiteCollection<ThresholdSettings> f_collection = database.GetCollection<ThresholdSettings>(nameof(ThresholdSettings));
+    private readonly ILogger<ThresholdSettingsProvider> _logger = logger;
+    private readonly ILiteCollection<ThresholdSettings> _collection = database.GetCollection<ThresholdSettings>(nameof(ThresholdSettings));
 
     public ThresholdSettings GetSettings() {
-        if (!f_collection.Find(e => e.Id == ThresholdSettings.Target).TryGetFirst(out ThresholdSettings? settings)) {
-            f_collection.Insert(settings ??= new());
+        ThresholdSettings settings = _collection.FindById(ThresholdSettings.Target);
+
+        if (settings is null) {
+            settings = new ThresholdSettings();
+            _collection.Insert(settings);
         }
 
-        f_debugLogger.LogApp($"Fetched: {System.Text.Json.JsonSerializer.Serialize(settings)}");
+        _logger.LogDebug("Fetched ThresholdSettings as: {@settings}", settings);
         
         settings.PropertyChanged += (sender, args) => SaveChanges(settings);
 
@@ -28,8 +30,7 @@ public class ThresholdSettingsProvider(ILiteDatabase database, IDebugLogger debu
     }
 
     private void SaveChanges(ThresholdSettings settings) {
-        f_collection?.Update(settings);
-        Log.Information("Saved changes to ThresholdSettings");
-        f_debugLogger.LogApp($"Saved: {System.Text.Json.JsonSerializer.Serialize(settings)}");
+        _collection?.Update(settings);
+        _logger.LogInformation("Saved changes to ThresholdSettings");
     }
 }

@@ -10,4 +10,5 @@
     <Platform Solution="*|x86" Project="x86" />
     <Deploy />
   </Project>
+  <Project Path="submodule/VRChatOSCClient/src/VRChatOSCClient/VRChatOSCClient.csproj" />
 </Solution>

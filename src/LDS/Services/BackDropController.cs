@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 using Windows.UI;
 using WinRT;
 
-namespace LDS.Utilities;
+namespace LDS.Services;
 
 public interface IBackDropController
 {

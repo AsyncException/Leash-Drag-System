@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
 using System.Threading.Tasks;
 using System;
+using LDS.Models;
+using CommunityToolkit.Mvvm.DependencyInjection;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -9,7 +11,9 @@ using System;
 namespace LDS.Components;
 public sealed partial class MainContent : UserControl
 {
+    public ConnectionStatus ConnectionStatus { get; } = Ioc.Default.GetRequiredService<ConnectionStatus>();
     public MainContent() => InitializeComponent();
+    
 
     [RelayCommand]
     public async Task InvokeSettings() {
@@ -28,21 +32,20 @@ public sealed partial class MainContent : UserControl
         _ = await contentDialog.ShowAsync();
     }
 
-    private DebugWindow? f_debugWindow;
+    private DebugWindow? _debugWindow;
 
     [RelayCommand]
     public void ToggleConsole() {
-        if (f_debugWindow is null) {
-            f_debugWindow = new DebugWindow();
-            f_debugWindow.Closed += (s, e) => {
-                f_debugWindow.OnClose();
-                f_debugWindow = null;
+        if (_debugWindow is null) {
+            _debugWindow = new DebugWindow();
+            _debugWindow.Closed += (s, e) => {
+                _debugWindow = null;
             };
 
-            f_debugWindow.Activate();
+            _debugWindow.Activate();
         }
         else {
-            f_debugWindow.Activate();
+            _debugWindow.Activate();
         }
     }
 }

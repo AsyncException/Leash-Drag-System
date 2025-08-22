@@ -2,7 +2,6 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Serilog;
 using LDS.Services;
-using LDS.Services.VRChatOSC;
 using Microsoft.Extensions.Hosting;
 using System.Threading;
 

@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VRChatOSCClient;
 using VRChatOSCClient.OSCConnections;
+using VRChatOSCClient.OSCQuery;
 
 namespace LDS.Services;
 
@@ -27,6 +28,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private OSCParameters Parameters { get; init; }
     private TimerStorage TimerData { get; init; }
     private ThresholdSettings ThresholdSettings { get; init; }
+    public ConnectionStatus ConnectionStatus { get; }
     private ApplicationSettings ApplicationSettings { get; init; }
 
     private CancellationTokenSource _leashCts = new();
@@ -46,7 +48,8 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
         TimerStorage timerData,
 
         ApplicationSettings applicationSettings,
-        ThresholdSettings thresholdSettings
+        ThresholdSettings thresholdSettings,
+        ConnectionStatus connectionStatus
         ) {
         _client = client;
         _logger = logger;
@@ -57,10 +60,22 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
         
         ApplicationSettings = applicationSettings;
         ThresholdSettings = thresholdSettings;
-
+        ConnectionStatus = connectionStatus;
         _client.OnParameterReceived += UpdateParameters;
         _client.OnAvatarChanged += UpdateParameters;
+        _client.OnVRChatClientFound += ClientConnected;
+
         WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
+    private Task ClientConnected(VRChatConnectionInfo info, CancellationToken token) {
+        _dispatcherQueue.TryEnqueue(() => {
+            ConnectionStatus.IsConnected = true;
+            ConnectionStatus.SendPort = info.SendEndpoint.Port;
+            ConnectionStatus.ReceivePort = info.ReceiveEndpoint.Port;
+        });
+        
+        return Task.CompletedTask;
     }
 
     /// <summary>

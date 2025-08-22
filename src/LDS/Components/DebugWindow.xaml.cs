@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
+using LDS.Logger;
 using Microsoft.UI.Xaml;
 using System;
 
@@ -16,21 +17,4 @@ public sealed partial class DebugWindow : Window
         InitializeComponent();
         ExtendsContentIntoTitleBar = true;
     }
-
-    public void OnClose() {
-    }
-
-    private void ScrollIntoView(object? sender, (string latestMessage, string LogName)context) {
-        (context.LogName switch {
-            "AppLogs" => AppLogList,
-            "ReceiveLogs" => ReceiveLogList,
-            "SendLogs" => SendLogList,
-            _ => throw new ArgumentException("Invalid log name", nameof(context))
-        }).ScrollIntoView(context.latestMessage);
-    }
-}
-
-public class DebugLogMessage(Guid id, string message) {
-    public Guid Id { get; } = id;
-    public string Message { get; } = message;
 }

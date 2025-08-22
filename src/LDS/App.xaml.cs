@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using VRChatOSCClient;
 using System.Net;
 using LDS.TimerSystem;
+using LDS.Logger;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -37,8 +38,10 @@ public partial class App : Application
 
         HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 
+        DebugLoggingStore loggingStore = new();
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)
+            .WriteTo.DebugWindowSink(loggingStore)
             .CreateLogger();
 
         builder.Logging.AddSerilog();
@@ -59,8 +62,10 @@ public partial class App : Application
         builder.Services.AddSingleton<ITimeDataProvider, TimeDataProvider>();
         builder.Services.AddSingleton<TimerStorage>(service => service.GetRequiredService<ITimeDataProvider>().GetTime());
 
+        builder.Services.AddSingleton<ConnectionStatus>();
         builder.Services.AddSingleton<OSCParameters>();
         builder.Services.AddSingleton<MovementData>();
+        builder.Services.AddSingleton(loggingStore);
 
         AppHost = builder.Build();
 

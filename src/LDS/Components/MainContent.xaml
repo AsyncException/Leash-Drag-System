@@ -5,9 +5,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:LDS"
     xmlns:components="using:LDS.Components"
+    xmlns:converters="using:LDS.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:VisibilityConverter x:Name="visibility" />
+        <converters:InvertedVisibilityConverter x:Name="invVisibility" />
+    </UserControl.Resources>
 
     <Grid ColumnSpacing="15" Padding="15 0 15 15">
 
@@ -31,10 +36,35 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
-            <TextBlock Text="Leash Drag System" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="10"/>
+        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" ColumnSpacing="25">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Text="Leash Drag System" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="10"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 1 135 1" Spacing="5">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Connected:" VerticalAlignment="Center" />
+                <FontIcon Glyph="&#xE701;" Foreground="Green" Visibility="{x:Bind ConnectionStatus.IsConnected, Mode=OneWay, Converter={StaticResource visibility}}" />
+                <FontIcon Glyph="&#xEB5E;" Foreground="Red" Visibility="{x:Bind ConnectionStatus.IsConnected, Mode=OneWay, Converter={StaticResource invVisibility}}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal"  Spacing="10">
+                <TextBlock Text="Send port:" VerticalAlignment="Center" />
+                <TextBlock Text="{x:Bind ConnectionStatus.SendPortString, Mode=OneWay}" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Send port:" VerticalAlignment="Center" />
+                <TextBlock Text="{x:Bind ConnectionStatus.ReceivePortString, Mode=OneWay}" VerticalAlignment="Center" />
+            </StackPanel>
+            
+            <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
                 <Button Command="{x:Bind ToggleConsoleCommand}" >
                     <FontIcon Glyph="&#xEC7A;" FontSize="20" />
                 </Button>

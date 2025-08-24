@@ -14,20 +14,20 @@ public partial class ApplicationSettings : ObservableObject
     [ObservableProperty] public partial bool GlobalEnableCounter { get; set; } = false;
     partial void OnGlobalEnableCounterChanged(bool value) {
         if (value) {
-            StrongReferenceMessenger.Default.Send<StartTimerUpdater>();
+            WeakReferenceMessenger.Default.Send<StartTimerUpdater>();
         }
         else {
-            StrongReferenceMessenger.Default.Send<StopTimerUpdater>();
+            WeakReferenceMessenger.Default.Send<StopTimerUpdater>();
         }
     }
 
     [ObservableProperty] public partial bool GlobalEnableLeash { get; set; } = true;
     partial void OnGlobalEnableLeashChanged(bool value) {
         if (value) {
-            StrongReferenceMessenger.Default.Send<StartLeashUpdater>();
+            WeakReferenceMessenger.Default.Send<StartLeashUpdater>();
         }
         else {
-            StrongReferenceMessenger.Default.Send<StopLeashUpdater>();
+            WeakReferenceMessenger.Default.Send<StopLeashUpdater>();
         }
     }
 

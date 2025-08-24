@@ -14,5 +14,5 @@ public sealed partial class Settings : UserControl
     public ApplicationSettings ApplicationSettings { get; } = Ioc.Default.GetRequiredService<ApplicationSettings>();
 
     public Settings() => InitializeComponent();
-    [RelayCommand] public static void EmergencyStop() => StrongReferenceMessenger.Default.Send<EmergencyStopMessage>();
+    [RelayCommand] public static void EmergencyStop() => WeakReferenceMessenger.Default.Send<EmergencyStopMessage>();
 }

@@ -143,6 +143,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     /// </summary>
     /// <param name="message"></param>
     void IRecipient<StartUnityMessage>.Receive(StartUnityMessage message) {
+        _logger.LogInformation("Received StartUnityMessage, restarting VRChatClient");
         message.Reply(Task.Run<bool>(async () => {
             try {
                 await _client.StopAsync();

@@ -17,7 +17,7 @@ using VRChatOSCClient.OSCQuery;
 
 namespace LDS.Services;
 
-internal partial class BackgroundUpdater : BackgroundService, IRecipient<EmergencyStopMessage>, IRecipient<StartLeashUpdater>, IRecipient<StopLeashUpdater>, IRecipient<StartTimerUpdater>, IRecipient<StopTimerUpdater>
+internal partial class BackgroundUpdater : BackgroundService, IRecipient<EmergencyStopMessage>, IRecipient<StartLeashUpdater>, IRecipient<StopLeashUpdater>, IRecipient<StartTimerUpdater>, IRecipient<StopTimerUpdater>, IRecipient<StartUnityMessage>
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -74,7 +74,23 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
             ConnectionStatus.SendPort = info.SendEndpoint.Port;
             ConnectionStatus.ReceivePort = info.ReceiveEndpoint.Port;
         });
-        
+
+        if (_leashCts.IsCancellationRequested) {
+            _leashCts = new CancellationTokenSource();
+        }
+
+        if (_timerCts.IsCancellationRequested) {
+            _timerCts = new CancellationTokenSource();
+        }
+
+        if (ApplicationSettings.GlobalEnableLeash && !_leashTask.IsCanceled) {
+            _leashTask = LeashTask();
+        }
+
+        if (ApplicationSettings.GlobalEnableLeash && !_leashTask.IsCanceled) {
+            _timerTask = TimerTask();
+        }
+
         return Task.CompletedTask;
     }
 
@@ -83,18 +99,11 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     /// </summary>
     /// <param name="stoppingToken"></param>
     /// <returns></returns>
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) {
         MessageFilter filter = new();
         filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
-        await _client.StartAndWaitAsync(filter, stoppingToken).ConfigureAwait(false);
-
-        if (ApplicationSettings.GlobalEnableLeash) {
-            _leashTask = LeashTask();
-        }
-
-        if (ApplicationSettings.GlobalEnableLeash) {
-            _timerTask = TimerTask();
-        }
+        _client.Start(filter, stoppingToken);
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -127,7 +136,31 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private Task UpdateParameters(Dictionary<string, object?> parameters, CancellationToken token) {
         Parameters.UpdateParameters(_dispatcherQueue, parameters);
         return Task.CompletedTask;
-    }   
+    }
+
+    /// <summary>
+    /// Disables the current client and switches to a new Unity client on localhost ports 9000 and 9001.
+    /// </summary>
+    /// <param name="message"></param>
+    void IRecipient<StartUnityMessage>.Receive(StartUnityMessage message) {
+        message.Reply(Task.Run<bool>(async () => {
+            try {
+                await _client.StopAsync();
+                await StopLeash();
+                await StopTimer();
+
+                MessageFilter filter = new();
+                filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
+                await _client.Start(new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9000), new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9001), filter, CancellationToken.None);
+
+                return true;
+            }
+            catch (Exception ex) {
+                _logger.LogError(ex, "Failed to switch to Unity client");
+                return false;
+            }
+        }));
+    }
 
     #region Leash stuff
     /// <summary>
@@ -289,7 +322,9 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
                     continue;
                 }
 
-                TimerData.FromTimeSpan(new(TimerData.GetTimeSpan().Ticks + TimeSpan.TicksPerSecond)); //Add a second to the timer
+                _dispatcherQueue.TryEnqueue(() => {
+                    TimerData.FromTimeSpan(new(TimerData.GetTimeSpan().Ticks + TimeSpan.TicksPerSecond)); //Add a second to the timer
+                });
 
                 _timeProvider.SaveTime(TimerData);
 

@@ -65,6 +65,13 @@
             </StackPanel>
             
             <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
+                <FontIcon Glyph="&#xE930;" x:Name="UnitySuccess" Visibility="Collapsed" />
+                <FontIcon Glyph="&#xEA39;" x:Name="UnityError" Visibility="Collapsed" />
+                <ProgressRing x:Name="UnityProgress" IsActive="True" Visibility="Collapsed" />
+                <Button Command="{x:Bind StartUnityCommand}" >
+                    <BitmapIcon UriSource="ms-appx:///Assets/unity.png" Width="20" Height="20" />
+                </Button>
+
                 <Button Command="{x:Bind ToggleConsoleCommand}" >
                     <FontIcon Glyph="&#xEC7A;" FontSize="20" />
                 </Button>

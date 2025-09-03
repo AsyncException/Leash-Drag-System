@@ -54,6 +54,10 @@ dotnet publish "$basePath\$projectPath" `
     /p:SelfContained=true `
     -v:normal
 
+Write-Host "Removing language folders"
+
+Get-ChildItem $basePath -Recurse -Filter "Microsoft.ui.xaml.dll.mui" | Select-Object -ExpandProperty Directory -unique | Where-Object name -ne "en-us" | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -Confirm:$false }
+
 $confirmation = Read-Host "Do you want to build the installer?"
 if($confirmation -eq "Y" -or $confirmation -eq "y") {
     Write-Host "Building installer"

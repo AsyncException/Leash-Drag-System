@@ -6,12 +6,15 @@
     xmlns:local="using:LDS"
     xmlns:components="using:LDS.Components"
     xmlns:converters="using:LDS.Converters"
+    xmlns:utilities="using:LDS.Utilities"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:VisibilityConverter x:Name="visibility" />
         <converters:InvertedVisibilityConverter x:Name="invVisibility" />
+
+        <utilities:ImageLoader x:Key="UnityImage" Name="LDS.Assets.unity.png" />
     </UserControl.Resources>
 
     <Grid ColumnSpacing="15" Padding="15 0 15 15">
@@ -69,7 +72,7 @@
                 <FontIcon Glyph="&#xEA39;" x:Name="UnityError" Visibility="Collapsed" />
                 <ProgressRing x:Name="UnityProgress" IsActive="True" Visibility="Collapsed" />
                 <Button Command="{x:Bind StartUnityCommand}" >
-                    <BitmapIcon UriSource="ms-appx:///Assets/unity.png" Width="20" Height="20" />
+                    <Image Source="{StaticResource UnityImage}" Width="20" Height="20" />
                 </Button>
 
                 <Button Command="{x:Bind ToggleConsoleCommand}" >

@@ -21,10 +21,6 @@ internal class StretchLeashCalculator : LeashCalculator
 
         direction *= leash.Stretch;
 
-        if(direction == Vector2.NaN) {
-            direction = Vector2.Zero;
-        }
-
         float horizontalLook = GetHorizontalLook(leash, thresholds, direction.X);
         bool shouldRun = ShouldRun(leash, thresholds, previous);
         return new MovementData { HorizontalLook = horizontalLook, HorizontalOffset = direction.X, VerticalOffset = direction.Y, ShouldRun = shouldRun };

@@ -28,8 +28,9 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private OSCParameters Parameters { get; init; }
     private TimerStorage TimerData { get; init; }
     private ThresholdSettings ThresholdSettings { get; init; }
-    public ConnectionStatus ConnectionStatus { get; }
+    private ConnectionStatus ConnectionStatus { get; init; }
     private ApplicationSettings ApplicationSettings { get; init; }
+    private MovementData PreviousData { get; init; }
 
     private CancellationTokenSource _leashCts = new();
     private CancellationTokenSource _timerCts = new();
@@ -46,6 +47,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
 
         OSCParameters parameters,
         TimerStorage timerData,
+        MovementData movementData,
 
         ApplicationSettings applicationSettings,
         ThresholdSettings thresholdSettings,
@@ -57,7 +59,8 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
 
         Parameters = parameters;
         TimerData = timerData;
-        
+        PreviousData = movementData;
+
         ApplicationSettings = applicationSettings;
         ThresholdSettings = thresholdSettings;
         ConnectionStatus = connectionStatus;
@@ -164,10 +167,6 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     }
 
     #region Leash stuff
-    /// <summary>
-    /// Holds the previous moving data.
-    /// </summary>
-    private MovementData PreviousData { get; } = new();
 
     /// <summary>
     /// The main leash loop task that will update send data to vrchat.
@@ -186,13 +185,18 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
                     continue;
                 }
 
-                MovementData currentData = LeashCalculator.GetLeashData(Parameters, ThresholdSettings, PreviousData);
+                MovementData currentData = ApplicationSettings.CalculatorType switch {
+                    MovementCalculatorType.Location => LeashCalculator.GetLeashData(Parameters, ThresholdSettings, PreviousData),
+                    MovementCalculatorType.Stretch => StretchLeashCalculator.GetLeashData(Parameters, ThresholdSettings, PreviousData),
+                    _ => LeashCalculator.GetLeashData(Parameters, ThresholdSettings, PreviousData),
+                };
 
-                if(currentData.Equals(PreviousData)) {
+                if (currentData.Equals(PreviousData)) {
                     continue;
                 }
 
-                PreviousData.CopyFrom(currentData);
+                _dispatcherQueue.TryEnqueue(() => PreviousData.CopyFrom(currentData));
+                
                 _client.SendMovement(PreviousData);
             }
         }

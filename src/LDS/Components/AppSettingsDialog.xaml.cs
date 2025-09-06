@@ -1,13 +1,10 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using LDS.Messages;
 using LDS.Models;
 using LDS.Services;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -19,7 +16,7 @@ namespace LDS.Components;
 public sealed partial class AppSettingsDialog : Page
 {
     public ApplicationSettings Settings { get; } = Ioc.Default.GetRequiredService<ApplicationSettings>();
-
+    public MovementCalculatorType[] CalculatorOptions { get; } = Enum.GetValues<MovementCalculatorType>();
     public AppSettingsDialog() => InitializeComponent();
 
 

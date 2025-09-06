@@ -32,4 +32,10 @@ public partial class ApplicationSettings : ObservableObject
     }
 
     [ObservableProperty] public partial bool EnableToggleOnNullInput { get; set; } = false;
+    [ObservableProperty] public partial MovementCalculatorType CalculatorType { get; set; } = MovementCalculatorType.Location;
+}
+
+public enum MovementCalculatorType : byte {
+    Location = 0,
+    Stretch = 1
 }

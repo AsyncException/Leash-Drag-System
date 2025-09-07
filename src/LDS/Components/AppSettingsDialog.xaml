@@ -20,22 +20,59 @@
     </Page.Resources>
 
     <StackPanel>
-        <ToggleSwitch IsOn="{x:Bind Settings.GlobalEnableLeash, Mode=TwoWay}" HorizontalAlignment="Center" OnContent="Leash enabled" OffContent="Leash disabled" />
-        <TextBlock Text="This globally disables the leash movement feature" TextAlignment="Center" />
+        <Grid ColumnSpacing="10" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Enable leash feature"  VerticalAlignment="Center" MinWidth="200" />
+            <ToggleSwitch Grid.Column="1" IsOn="{x:Bind Settings.GlobalEnableLeash, Mode=TwoWay}" VerticalAlignment="Center" OnContent="" OffContent="" MinWidth="0" />
+            <FontIcon Grid.Column="2" Glyph="&#xE946;" ToolTipService.ToolTip="This globally disables the leash movement feature" VerticalAlignment="Center" />
+        </Grid>
 
         <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
 
-        <ToggleSwitch IsOn="{x:Bind Settings.GlobalEnableCounter, Mode=TwoWay}" HorizontalAlignment="Center" OnContent="Counter enabled" OffContent="Counter disabled" />
-        <TextBlock Text="This globally disables the counter feature" TextAlignment="Center" />
+        <Grid ColumnSpacing="10" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Enable counter feature"  VerticalAlignment="Center" MinWidth="200" />
+            <ToggleSwitch Grid.Column="1" IsOn="{x:Bind Settings.GlobalEnableLeash, Mode=TwoWay}" VerticalAlignment="Center" OnContent="" OffContent="" MinWidth="0" />
+            <FontIcon Grid.Column="2" Glyph="&#xE946;" ToolTipService.ToolTip="This globally disables the counter feature" VerticalAlignment="Center" />
+        </Grid>
+        
+        <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
+
+        <Grid ColumnSpacing="10" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Allow Leash toggle" VerticalAlignment="Center" MinWidth="200" />
+            <ToggleSwitch Grid.Column="1" IsOn="{x:Bind Settings.EnableToggleOnNullInput, Mode=TwoWay}" VerticalAlignment="Center" OnContent="" OffContent="" MinWidth="0" />
+            <FontIcon Grid.Column="2" Glyph="&#xE946;" ToolTipService.ToolTip="This option allows the app to toggle off and on the leash when the distance to the colliders is 0. This can happen for quite a number of reasons and toggling it ususally solves it." VerticalAlignment="Center" />
+        </Grid>
 
         <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
 
-        <ToggleSwitch Header="Allow Leash toggle" IsOn="{x:Bind Settings.EnableToggleOnNullInput, Mode=TwoWay}" HorizontalAlignment="Center" />
-        <TextBlock TextWrapping="WrapWholeWords" Text="This option allows the app to toggle off and on the leash when the distance to the colliders is 0. This can happen for quite a number of reasons and toggling it ususally solves it." TextAlignment="Center" />
-
-        <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
-
-        <ComboBox ItemsSource="{x:Bind CalculatorOptions, Mode=OneTime}" SelectedItem="{x:Bind Settings.CalculatorType, Mode=TwoWay}" />
+        <Grid ColumnSpacing="10" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Grid.Column="0" Text="Calculator type" VerticalAlignment="Center" MinWidth="200" />
+            <ComboBox Grid.Column="1" ItemsSource="{x:Bind CalculatorOptions, Mode=OneTime}" SelectedItem="{x:Bind Settings.CalculatorType, Mode=TwoWay}" HorizontalAlignment="Center" MinWidth="150" />
+            <FontIcon Grid.Column="2" Glyph="&#xE946;" ToolTipService.ToolTip="{x:Bind Settings.CalculatorDescription, Mode=OneWay}" HorizontalAlignment="Right" />
+        </Grid>
 
         <Rectangle Height="1" Fill="#33ffffff" Margin="0,10"/>
 

@@ -1,9 +1,13 @@
 ﻿using LDS.Models;
-using LDS.Services.VRChatOSC;
 using System;
+using System.Numerics;
 
 namespace LDS.LeashSystem;
-internal class LeashCalculator
+
+/// <summary>
+/// Base class for the calculators with some utility methods.
+/// </summary>
+internal class BaseLeashCalculator
 {
     /// <summary>
     /// Calculates the vertical offset based on the difference between the front and back distances, scaled by the stretch factor.
@@ -45,7 +49,7 @@ internal class LeashCalculator
     /// <param name="thresholds">The threshold settings that define the minimum and maximum stretch values for running.</param>
     /// <param name="leashData">Additional leash data, including the current running state.</param>
     /// <returns><see langword="true"/> if the system should transition to a running state; otherwise, <see langword="false"/>.</returns>
-    public static bool ShouldRun(OSCParameters leash, ThresholdSettings thresholds, MovementData leashData) {
+    public static bool ShouldRun(OSCParameters leash, ThresholdSettings thresholds, ref MovementData leashData) {
         bool shouldRun = leash.Stretch > thresholds.RunningMaxThreshold;
 
         if (leashData.ShouldRun && !shouldRun && leash.Stretch > thresholds.RunningMinThreshold) {
@@ -64,13 +68,22 @@ internal class LeashCalculator
     public static bool LeashActive(OSCParameters leash, ThresholdSettings thresholds) => leash.IsGrabbed && leash.Stretch > thresholds.StretchThreshold;
 
     /// <summary>
+    /// Determines whether the leash has zero collider distances, indicating that it is not currently interacting with any colliders.
+    /// </summary>
+    /// <param name="leash">The leash parameters, including the distances to the colliders.</param>
+    /// <returns><see langword="true" /> if the distances are 0; otherwise, <see langword="false"/>.</returns>
+    public static bool IsZeroColliderDistance(OSCParameters leash) => leash.RightDistance == 0 && leash.LeftDistance == 0 && leash.FrontDistance == 0 && leash.BackDistance == 0;
+}
+
+internal class PositionLeashCalculator : BaseLeashCalculator {
+    /// <summary>
     /// Gets the leash data based on the current leash parameters, threshold settings, and previous leash data.
     /// </summary>
     /// <param name="leash">The current leash parameters.</param>
     /// <param name="thresholds">The threshold settings.</param>
     /// <param name="previous">Previous set of <see cref="MovementData"/> that this instance should be compared to.</param>
     /// <returns>An instance of <see cref="MovementData"/> that contains the movement data.</returns>
-    public static MovementData GetLeashData(OSCParameters leash, ThresholdSettings thresholds, MovementData previous) {
+    public static MovementData GetLeashData(OSCParameters leash, ThresholdSettings thresholds, ref MovementData previous) {
         if (!LeashActive(leash, thresholds)) {
             return new MovementData();
         }
@@ -78,14 +91,49 @@ internal class LeashCalculator
         float verticalOffset = GetVerticalOffset(leash);
         float horizontalOffset = GetHorizontalOffset(leash);
         float horizontalLook = GetHorizontalLook(leash, thresholds, horizontalOffset);
-        bool shouldRun = ShouldRun(leash, thresholds, previous);
+        bool shouldRun = ShouldRun(leash, thresholds, ref previous);
         return new MovementData { HorizontalLook = horizontalLook, HorizontalOffset = horizontalOffset, VerticalOffset = verticalOffset, ShouldRun = shouldRun };
     }
+}
 
+internal class StretchLeashCalculator : BaseLeashCalculator
+{
     /// <summary>
-    /// Determines whether the leash has zero collider distances, indicating that it is not currently interacting with any colliders.
+    /// Gets the leash data based on the current leash parameters, threshold settings, and previous leash data.
     /// </summary>
-    /// <param name="leash">The leash parameters, including the distances to the colliders.</param>
-    /// <returns><see langword="true" /> if the distances are 0; otherwise, <see langword="false"/>.</returns>
-    public static bool IsZeroColliderDistance(OSCParameters leash) => leash.RightDistance == 0 && leash.LeftDistance == 0 && leash.FrontDistance == 0 && leash.BackDistance == 0;
+    /// <param name="leash">The current leash parameters.</param>
+    /// <param name="thresholds">The threshold settings.</param>
+    /// <param name="previous">Previous set of <see cref="MovementData"/> that this instance should be compared to.</param>
+    /// <returns>An instance of <see cref="MovementData"/> that contains the movement data.</returns>
+    public static MovementData GetLeashData(OSCParameters leash, ThresholdSettings thresholds, ref MovementData previous) {
+        if (!LeashActive(leash, thresholds)) {
+            return new MovementData();
+        }
+
+        Vector2 direction = new(GetHorizontalOffset(leash), GetVerticalOffset(leash));
+        direction = Vector2.Normalize(direction);
+        if (float.IsNaN(direction.X)) { direction.X = 0; }
+        if (float.IsNaN(direction.Y)) { direction.Y = 0; }
+
+        direction *= leash.Stretch;
+
+        float horizontalLook = GetHorizontalLook(leash, thresholds, direction.X);
+        bool shouldRun = ShouldRun(leash, thresholds, ref previous);
+        return new MovementData { HorizontalLook = horizontalLook, HorizontalOffset = direction.X, VerticalOffset = direction.Y, ShouldRun = shouldRun };
+    }
+}
+
+internal class StretchPositionLeashCalculator : BaseLeashCalculator {
+    /// <summary>
+    /// Gets the leash data based on the current leash parameters, threshold settings, and previous leash data.
+    /// </summary>
+    /// <param name="leash">The current leash parameters.</param>
+    /// <param name="thresholds">The threshold settings.</param>
+    /// <param name="previous">Previous set of <see cref="MovementData"/> that this instance should be compared to.</param>
+    /// <returns>An instance of <see cref="MovementData"/> that contains the movement data.</returns>
+    public static MovementData GetLeashData(OSCParameters leash, ThresholdSettings thresholds, ref MovementData previous) {
+        return leash.Stretch >= 0.99
+            ? StretchLeashCalculator.GetLeashData(leash, thresholds, ref previous)
+            : PositionLeashCalculator.GetLeashData(leash, thresholds, ref previous);
+    }
 }

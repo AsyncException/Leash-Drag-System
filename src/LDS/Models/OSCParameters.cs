@@ -5,7 +5,7 @@ using VRChatOSCClient.OSCConnections;
 using Windows.Devices.SerialCommunication;
 using Windows.Foundation.Collections;
 
-namespace LDS.Services.VRChatOSC;
+namespace LDS.Models;
 
 /// <summary>
 /// This class holds the parameters received from VRChat OSC.

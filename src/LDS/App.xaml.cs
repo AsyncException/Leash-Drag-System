@@ -4,15 +4,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Serilog;
 using System;
-using System.Net.Http;
 using LDS.Models;
 using LDS.Services;
-using LDS.Services.VRChatOSC;
 using Microsoft.Extensions.Hosting;
 using VRChatOSCClient;
 using System.Net;
 using LDS.TimerSystem;
 using LDS.Logger;
+using LDS.LeashSystem;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -64,7 +63,7 @@ public partial class App : Application
 
         builder.Services.AddSingleton<ConnectionStatus>();
         builder.Services.AddSingleton<OSCParameters>();
-        builder.Services.AddSingleton<MovementData>();
+        builder.Services.AddSingleton<MovementDataViewModel>();
         builder.Services.AddSingleton(loggingStore);
 
         AppHost = builder.Build();

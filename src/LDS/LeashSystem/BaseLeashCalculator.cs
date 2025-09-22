@@ -132,8 +132,11 @@ internal class StretchPositionLeashCalculator : BaseLeashCalculator {
     /// <param name="previous">Previous set of <see cref="MovementData"/> that this instance should be compared to.</param>
     /// <returns>An instance of <see cref="MovementData"/> that contains the movement data.</returns>
     public static MovementData GetLeashData(OSCParameters leash, ThresholdSettings thresholds, ref MovementData previous) {
-        return leash.Stretch >= 0.99
-            ? StretchLeashCalculator.GetLeashData(leash, thresholds, ref previous)
-            : PositionLeashCalculator.GetLeashData(leash, thresholds, ref previous);
+        if(leash.Stretch > 0.95f) {
+            return PositionLeashCalculator.GetLeashData(leash, thresholds, ref previous);
+        }
+        else {
+            return StretchLeashCalculator.GetLeashData(leash, thresholds, ref previous);
+        }
     }
 }

@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Numerics;
 using LDS.Models;
-using LDS.Services.VRChatOSC;
 using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236

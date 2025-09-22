@@ -2,7 +2,6 @@
 using LDS.LeashSystem;
 using LDS.Messages;
 using LDS.Models;
-using LDS.Services.VRChatOSC;
 using LDS.TimerSystem;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -28,8 +27,9 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private OSCParameters Parameters { get; init; }
     private TimerStorage TimerData { get; init; }
     private ThresholdSettings ThresholdSettings { get; init; }
-    public ConnectionStatus ConnectionStatus { get; }
+    private ConnectionStatus ConnectionStatus { get; init; }
     private ApplicationSettings ApplicationSettings { get; init; }
+    private MovementDataViewModel MovementViewModel { get; init; }
 
     private CancellationTokenSource _leashCts = new();
     private CancellationTokenSource _timerCts = new();
@@ -46,6 +46,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
 
         OSCParameters parameters,
         TimerStorage timerData,
+        MovementDataViewModel movementViewModel,
 
         ApplicationSettings applicationSettings,
         ThresholdSettings thresholdSettings,
@@ -57,7 +58,8 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
 
         Parameters = parameters;
         TimerData = timerData;
-        
+        MovementViewModel = movementViewModel;
+
         ApplicationSettings = applicationSettings;
         ThresholdSettings = thresholdSettings;
         ConnectionStatus = connectionStatus;
@@ -164,10 +166,6 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     }
 
     #region Leash stuff
-    /// <summary>
-    /// Holds the previous moving data.
-    /// </summary>
-    private MovementData PreviousData { get; } = new();
 
     /// <summary>
     /// The main leash loop task that will update send data to vrchat.
@@ -176,6 +174,8 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private async Task LeashTask() {
         try {
             using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(50));
+
+            MovementData previousData = new();
             while(await timer.WaitForNextTickAsync(_leashCts.Token)) {
                 if(!ThresholdSettings.LeashEnabled) {
                     continue;
@@ -186,14 +186,22 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
                     continue;
                 }
 
-                MovementData currentData = LeashCalculator.GetLeashData(Parameters, ThresholdSettings, PreviousData);
+                MovementData currentData = ApplicationSettings.CalculatorType switch {
+                    MovementCalculatorType.Location => PositionLeashCalculator.GetLeashData(Parameters, ThresholdSettings, ref previousData),
+                    MovementCalculatorType.Stretch => StretchLeashCalculator.GetLeashData(Parameters, ThresholdSettings, ref previousData),
+                    MovementCalculatorType.Combined => StretchPositionLeashCalculator.GetLeashData(Parameters, ThresholdSettings, ref previousData),
+                    _ => PositionLeashCalculator.GetLeashData(Parameters, ThresholdSettings, ref previousData),
+                };
 
-                if(currentData.Equals(PreviousData)) {
+                //Send latest data to UI. Pass currentData without ref so struct is copied.
+                _dispatcherQueue.TryEnqueue(() => MovementViewModel.RenewData(currentData));
+
+                if (currentData.Equals(previousData)) {
                     continue;
                 }
-
-                PreviousData.CopyFrom(currentData);
-                _client.SendMovement(PreviousData);
+                
+                previousData = currentData;
+                _client.SendMovement(ref previousData);
             }
         }
         catch (TaskCanceledException) { }
@@ -209,7 +217,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     /// </summary>
     /// <returns></returns>
     private bool ShouldReset() {
-        bool shouldReset = ApplicationSettings.EnableToggleOnNullInput && LeashCalculator.IsZeroColliderDistance(Parameters);
+        bool shouldReset = ApplicationSettings.EnableToggleOnNullInput && BaseLeashCalculator.IsZeroColliderDistance(Parameters);
         if(!shouldReset && _retryCount > 0) {
             _retryCount = 0;
         }

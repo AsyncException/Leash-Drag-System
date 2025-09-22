@@ -3,4 +3,4 @@ using System.Threading.Tasks;
 
 namespace LDS.Messages;
 
-public class StartUnityMessage : RequestMessage<Task<bool>>;
+public class ToggleUnityMessage : RequestMessage<Task<bool>>;

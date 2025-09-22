@@ -53,7 +53,7 @@ public sealed partial class MainContent : UserControl {
     [RelayCommand]
     public async Task StartUnity() {
         UnityProgress.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-        bool success = await WeakReferenceMessenger.Default.Send(new StartUnityMessage()).Response;
+        bool success = await WeakReferenceMessenger.Default.Send(new ToggleUnityMessage()).Response;
         
         UnityProgress.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 

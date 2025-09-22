@@ -16,7 +16,7 @@ using VRChatOSCClient.OSCQuery;
 
 namespace LDS.Services;
 
-internal partial class BackgroundUpdater : BackgroundService, IRecipient<EmergencyStopMessage>, IRecipient<StartLeashUpdater>, IRecipient<StopLeashUpdater>, IRecipient<StartTimerUpdater>, IRecipient<StopTimerUpdater>, IRecipient<StartUnityMessage>
+internal partial class BackgroundUpdater : BackgroundService, IRecipient<EmergencyStopMessage>, IRecipient<StartLeashUpdater>, IRecipient<StopLeashUpdater>, IRecipient<StartTimerUpdater>, IRecipient<StopTimerUpdater>, IRecipient<ToggleUnityMessage>
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -35,6 +35,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private CancellationTokenSource _timerCts = new();
 
     private int _retryCount = 0;
+    private bool _isInUnityMode = false;
     private Task _leashTask = Task.CompletedTask;
     private Task _timerTask = Task.CompletedTask;
     private readonly SemaphoreSlim _stopStartSemaphore = new(1, 1);
@@ -144,25 +145,56 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     /// Disables the current client and switches to a new Unity client on localhost ports 9000 and 9001.
     /// </summary>
     /// <param name="message"></param>
-    void IRecipient<StartUnityMessage>.Receive(StartUnityMessage message) {
-        _logger.LogInformation("Received StartUnityMessage, restarting VRChatClient");
-        message.Reply(Task.Run<bool>(async () => {
-            try {
-                await _client.StopAsync();
-                await StopLeash();
-                await StopTimer();
+    void IRecipient<ToggleUnityMessage>.Receive(ToggleUnityMessage message) {
+        if (_isInUnityMode) {
+            _logger.LogInformation("Received StartUnityMessage, restarting restarting with VRChat client");
 
-                MessageFilter filter = new();
-                filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
-                await _client.Start(new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9000), new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9001), filter, CancellationToken.None);
+            _dispatcherQueue.TryEnqueue(() => {
+                ConnectionStatus.IsConnected = false;
+                ConnectionStatus.SendPort = 0;
+                ConnectionStatus.ReceivePort = 0;
+            });
 
-                return true;
-            }
-            catch (Exception ex) {
-                _logger.LogError(ex, "Failed to switch to Unity client");
-                return false;
-            }
-        }));
+            message.Reply(Task.Run<bool>(async () => {
+                try {
+                    await _client.StopAsync();
+                    await StopLeash();
+                    await StopTimer();
+
+                    MessageFilter filter = new();
+                    filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
+                    _client.Start(filter, CancellationToken.None);
+
+                    return true;
+                }
+                catch (Exception ex) {
+                    _logger.LogError(ex, "Failed to switch to VRChat client");
+                    return false;
+                }
+            }));
+            _isInUnityMode = false;
+        }
+        else {
+            _logger.LogInformation("Received StartUnityMessage, restarting into Unity mode");
+            message.Reply(Task.Run<bool>(async () => {
+                try {
+                    await _client.StopAsync();
+                    await StopLeash();
+                    await StopTimer();
+
+                    MessageFilter filter = new();
+                    filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
+                    await _client.Start(new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9000), new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9001), filter, CancellationToken.None);
+
+                    return true;
+                }
+                catch (Exception ex) {
+                    _logger.LogError(ex, "Failed to switch to Unity client");
+                    return false;
+                }
+            }));
+            _isInUnityMode = true;
+        }
     }
 
     #region Leash stuff

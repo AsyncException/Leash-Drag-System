@@ -50,6 +50,7 @@ public partial class App : Application
         builder.Services.AddHostedService<BackgroundUpdater>();
 
         builder.Services.AddTransient<IBackDropController, BackDropController>();
+        builder.Services.AddTransient<IAppResizeService, AppResizeService>();
         builder.Services.AddSingleton<ILiteDatabase>(s => new LiteDatabase(StorageLocation.GetDatabasePath()));
 
         builder.Services.AddSingleton<IApplicationSettingsProvider, ApplicationSettingsProvider>();

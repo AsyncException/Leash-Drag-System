@@ -15,13 +15,15 @@ namespace LDS;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    private readonly IBackDropController _backDropController = Ioc.Default.GetRequiredService<IBackDropController>()!;
     private readonly IHostLifetime _lifeTime = Ioc.Default.GetRequiredService<IHostLifetime>();
+    private readonly IAppResizeService _appResizeService = Ioc.Default.GetRequiredService<IAppResizeService>()!;
+    private readonly IBackDropController _backDropController = Ioc.Default.GetRequiredService<IBackDropController>()!;
 
     public MainWindow() {
         InitializeComponent();
         ExtendsContentIntoTitleBar = true;
         _backDropController.SetAcrylicBackdrop(this);
+        _appResizeService.SetWindow(this);
 
         Closed += CleanUp;
     }

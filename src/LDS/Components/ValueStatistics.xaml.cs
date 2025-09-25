@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.UI.Xaml.Controls;
-using LDS.Models;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using LDS.LeashSystem;
-
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
+using LDS.Messages;
+using LDS.Models;
+using Microsoft.UI.Xaml.Controls;
 
 namespace LDS;
 
@@ -15,4 +16,6 @@ public sealed partial class ValueStatistics : UserControl
     public TimerStorage TimerStorage { get; } = Ioc.Default.GetRequiredService<TimerStorage>();
 
     public ValueStatistics() => InitializeComponent();
+
+    [RelayCommand] public static void EmergencyStop() => WeakReferenceMessenger.Default.Send<EmergencyStopMessage>();
 }

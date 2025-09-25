@@ -75,12 +75,7 @@ public partial class  DebugLoggingStore : ObservableObject
     public bool DebuggerAttached { get; set; } = false;
 
     public void AddLogMessage(LogEntry message) {
-        if (DebuggerAttached) {
-            _dispatcherQueue.TryEnqueue(Add);
-        }
-        else {
-            Add();
-        }
+        _dispatcherQueue.TryEnqueue(Add);
 
         void Add() {
             if (LogMessages.Count >= MAX_MESSAGES) {
@@ -93,12 +88,7 @@ public partial class  DebugLoggingStore : ObservableObject
     }
 
     public void AddDebugMessage(LogEntry message) {
-        if (DebuggerAttached) {
-            _dispatcherQueue.TryEnqueue(Add);
-        }
-        else {
-            Add();
-        }
+        _dispatcherQueue.TryEnqueue(Add);
 
         void Add() {
             if (LogMessages.Count >= MAX_MESSAGES) {

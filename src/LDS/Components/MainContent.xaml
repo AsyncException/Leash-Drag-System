@@ -13,10 +13,69 @@
     <UserControl.Resources>
         <converters:VisibilityConverter x:Name="visibility" />
         <converters:InvertedVisibilityConverter x:Name="invVisibility" />
-
         <utilities:ImageLoader x:Key="UnityImage" Name="LDS.Assets.unity.png" />
     </UserControl.Resources>
 
+    <NavigationView x:Name="Navigation"
+                    Margin="0 30 0 0"
+                    SelectionChanged="Navigation_SelectionChanged"
+                    PaneDisplayMode="LeftCompact"
+                    IsPaneToggleButtonVisible="False"
+                    IsSettingsVisible="False"
+                    IsBackButtonVisible="Collapsed">
+
+        <NavigationView.Resources>
+            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
+        </NavigationView.Resources>
+            
+        <NavigationView.MenuItems>
+
+            <NavigationViewItem Tag="HomePage" Content="Home">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE890;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem Tag="ValuesPage" Content="Values">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE90F;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            
+        </NavigationView.MenuItems>
+        
+        <NavigationView.FooterMenuItems>
+
+            <NavigationViewItem Tag="Connection" Content="Connection" IsEnabled="False">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="{x:Bind ConnectionStatus.ConnectionIcon, Mode=OneWay}" Foreground="{x:Bind ConnectionStatus.ConnectionColor, Mode=OneWay}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem Tag="Unity" Content="Unity">
+                <NavigationViewItem.Icon>
+                    <BitmapIcon UriSource="/Assets/unity.png" Width="20" Height="20" Foreground="{x:Bind ConnectionStatus.UnityColor, Mode=OneWay}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem Tag="Console" Content="Console">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xEC7A;" FontSize="20" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem Tag="SettingsPage" Content="Settings">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE713;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+        </NavigationView.FooterMenuItems>
+
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
+
+    <!--
     <Grid ColumnSpacing="15" Padding="15 0 15 15">
 
         <Grid.Resources>
@@ -85,35 +144,6 @@
             </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1" Padding="12" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <local:ValueStatistics Grid.Row="0" />
-                <ScrollViewer Grid.Row="1"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
-
-                    <Grid VerticalAlignment="Stretch">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="auto" />
-                        </Grid.RowDefinitions>
-
-                        <local:Settings Grid.Row="1" />
-
-                    </Grid>
-                </ScrollViewer>
-            </Grid>
-
-        </Border>
-
-        <Border Grid.Row="1" Grid.Column="1" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-            <local:AvatarVisualizerCanvas />
-        </Border>
-
     </Grid>
+    -->
 </UserControl>

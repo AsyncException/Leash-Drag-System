@@ -16,64 +16,77 @@
         <utilities:ImageLoader x:Key="UnityImage" Name="LDS.Assets.unity.png" />
     </UserControl.Resources>
 
-    <NavigationView x:Name="Navigation"
-                    Margin="0 30 0 0"
-                    SelectionChanged="Navigation_SelectionChanged"
-                    PaneDisplayMode="LeftCompact"
-                    IsPaneToggleButtonVisible="False"
-                    IsSettingsVisible="False"
-                    IsBackButtonVisible="Collapsed">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <NavigationView.Resources>
-            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
-        </NavigationView.Resources>
-            
-        <NavigationView.MenuItems>
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Leash Drag System" VerticalAlignment="Center" Margin="10 5 5 5" Height="30"/>
+        </StackPanel>
 
-            <NavigationViewItem Tag="HomePage" Content="Home">
-                <NavigationViewItem.Icon>
-                    <FontIcon Glyph="&#xE890;" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+        <NavigationView x:Name="Navigation"
+                Grid.Row="1"
+                SelectionChanged="Navigation_SelectionChanged"
+                PaneDisplayMode="LeftCompact"
+                IsPaneToggleButtonVisible="False"
+                IsSettingsVisible="False"
+                IsBackButtonVisible="Collapsed">
 
-            <NavigationViewItem Tag="ValuesPage" Content="Values">
-                <NavigationViewItem.Icon>
-                    <FontIcon Glyph="&#xE90F;" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            
-        </NavigationView.MenuItems>
-        
-        <NavigationView.FooterMenuItems>
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
+            </NavigationView.Resources>
 
-            <NavigationViewItem Tag="Connection" Content="Connection" IsEnabled="False">
-                <NavigationViewItem.Icon>
-                    <FontIcon Glyph="{x:Bind ConnectionStatus.ConnectionIcon, Mode=OneWay}" Foreground="{x:Bind ConnectionStatus.ConnectionColor, Mode=OneWay}" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+            <NavigationView.MenuItems>
 
-            <NavigationViewItem Tag="Unity" Content="Unity">
-                <NavigationViewItem.Icon>
-                    <BitmapIcon UriSource="/Assets/unity.png" Width="20" Height="20" Foreground="{x:Bind ConnectionStatus.UnityColor, Mode=OneWay}" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+                <NavigationViewItem Tag="HomePage" Content="Home">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE890;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-            <NavigationViewItem Tag="Console" Content="Console">
-                <NavigationViewItem.Icon>
-                    <FontIcon Glyph="&#xEC7A;" FontSize="20" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+                <NavigationViewItem Tag="ValuesPage" Content="Values">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE90F;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-            <NavigationViewItem Tag="SettingsPage" Content="Settings">
-                <NavigationViewItem.Icon>
-                    <FontIcon Glyph="&#xE713;" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+            </NavigationView.MenuItems>
 
-        </NavigationView.FooterMenuItems>
+            <NavigationView.FooterMenuItems>
 
-        <Frame x:Name="ContentFrame" />
-    </NavigationView>
+                <NavigationViewItem Tag="Connection" Content="Connection" IsEnabled="False">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind ConnectionStatus.ConnectionIcon, Mode=OneWay}" Foreground="{x:Bind ConnectionStatus.ConnectionColor, Mode=OneWay}" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Tag="Unity" Content="Unity">
+                    <NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="/Assets/unity.png" Width="20" Height="20" Foreground="{x:Bind ConnectionStatus.UnityColor, Mode=OneWay}" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Tag="Console" Content="Console">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEC7A;" FontSize="20" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Tag="SettingsPage" Content="Settings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+            </NavigationView.FooterMenuItems>
+
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
+    </Grid>
+
+    
 
     <!--
     <Grid ColumnSpacing="15" Padding="15 0 15 15">

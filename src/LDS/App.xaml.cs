@@ -1,17 +1,21 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
+using LDS.LeashSystem;
+using LDS.Logger;
+using LDS.Models;
+using LDS.Services;
+using LDS.TimerSystem;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Serilog;
 using System;
-using LDS.Models;
-using LDS.Services;
-using Microsoft.Extensions.Hosting;
-using VRChatOSCClient;
 using System.Net;
-using LDS.TimerSystem;
-using LDS.Logger;
-using LDS.LeashSystem;
+using VRChatOSCClient;
+using VRChatOSCClient.OpenVR;
+using Application = Microsoft.UI.Xaml.Application;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -21,7 +25,7 @@ namespace LDS;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IRecipient<InvokeExitMessage>
 {
     private Window? Window { get; set; }
     private IHost AppHost { get; }
@@ -35,6 +39,11 @@ public partial class App : Application
 
         StorageLocation.EnsureAppdataPathExists();
 
+        if (!StorageLocation.ManifestPathExists()) {
+            AppManifest.Create("builtin", "leashdragsystem.async", "binary", "LDS.exe", true, "Leash Drag System", "Enable Leashes in VRChat over OSC")
+            .WriteToFile(StorageLocation.GetManifestPath());
+        }
+
         HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 
         DebugLoggingStore loggingStore = new();
@@ -47,7 +56,9 @@ public partial class App : Application
         builder.Services.AddSerilog();
 
         builder.Services.AddVRChatClient("Leash Drag System", IPAddress.Loopback);
+        builder.Services.AddOpenVRClient(settings => settings.ManifestPath = StorageLocation.GetManifestPath());
         builder.Services.AddHostedService<BackgroundUpdater>();
+        builder.Services.AddHostedService<OpenVRService>();
 
         builder.Services.AddTransient<IBackDropController, BackDropController>();
         builder.Services.AddTransient<IAppResizeService, AppResizeService>();
@@ -65,6 +76,7 @@ public partial class App : Application
         builder.Services.AddSingleton<ConnectionStatus>();
         builder.Services.AddSingleton<OSCParameters>();
         builder.Services.AddSingleton<MovementDataViewModel>();
+        builder.Services.AddSingleton<OpenVRStatus>();
         builder.Services.AddSingleton(loggingStore);
 
         AppHost = builder.Build();
@@ -84,4 +96,11 @@ public partial class App : Application
         Window = new MainWindow();
         Window.Activate();
     }
+
+    void IRecipient<InvokeExitMessage>.Receive(InvokeExitMessage message) {
+        Exit();
+        message.Reply(null);
+    }
 }
+
+internal class InvokeExitMessage : RequestMessage<object?>;

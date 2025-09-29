@@ -27,11 +27,11 @@ namespace LDS.Pages;
 /// </summary>
 public sealed partial class SettingsPage : Page
 {
+    public OpenVRStatus OpenVRStatus { get; } = Ioc.Default.GetRequiredService<OpenVRStatus>();
     public ApplicationSettings Settings { get; } = Ioc.Default.GetRequiredService<ApplicationSettings>();
+
     public MovementCalculatorType[] CalculatorOptions { get; } = Enum.GetValues<MovementCalculatorType>();
-    public SettingsPage() {
-        InitializeComponent();
-    }
+    public SettingsPage() => InitializeComponent();
 
     [RelayCommand]
     public static void OpenLogDirectory() {

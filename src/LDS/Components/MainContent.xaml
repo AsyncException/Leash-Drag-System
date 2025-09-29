@@ -13,107 +13,64 @@
     <UserControl.Resources>
         <converters:VisibilityConverter x:Name="visibility" />
         <converters:InvertedVisibilityConverter x:Name="invVisibility" />
-
-        <utilities:ImageLoader x:Key="UnityImage" Name="LDS.Assets.unity.png" />
     </UserControl.Resources>
 
-    <Grid ColumnSpacing="15" Padding="15 0 15 15">
-
-        <Grid.Resources>
-            <Style TargetType="Border" x:Key="ContainerStyle">
-                <Setter Property="BorderBrush" Value="#1cffffff" />
-                <Setter Property="BorderThickness" Value="2" />
-                <Setter Property="CornerRadius" Value="10" />
-                <Setter Property="Padding" Value="10" />
-                <Setter Property="Background" Value="#aa0c0c0e" />
-            </Style>
-        </Grid.Resources>
-
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="35" />
+            <RowDefinition Height="30" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" ColumnSpacing="25">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="100"/>
-            </Grid.ColumnDefinitions>
-            
-            <TextBlock Text="Leash Drag System" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="10"/>
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Leash Drag System" VerticalAlignment="Center" Margin="10 5 5 5" Height="30"/>
+        </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Connected:" VerticalAlignment="Center" />
-                <FontIcon Glyph="&#xE701;" Foreground="Green" Visibility="{x:Bind ConnectionStatus.IsConnected, Mode=OneWay, Converter={StaticResource visibility}}" />
-                <FontIcon Glyph="&#xEB5E;" Foreground="Red" Visibility="{x:Bind ConnectionStatus.IsConnected, Mode=OneWay, Converter={StaticResource invVisibility}}" />
-            </StackPanel>
+        <NavigationView x:Name="Navigation"
+                Grid.Row="1"
+                SelectionChanged="Navigation_SelectionChanged"
+                PaneDisplayMode="LeftCompact"
+                IsPaneToggleButtonVisible="False"
+                IsSettingsVisible="False"
+                IsBackButtonVisible="Collapsed">
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal"  Spacing="10">
-                <TextBlock Text="Send port:" VerticalAlignment="Center" />
-                <TextBlock Text="{x:Bind ConnectionStatus.SendPortString, Mode=OneWay}" VerticalAlignment="Center" />
-            </StackPanel>
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
+            </NavigationView.Resources>
 
-            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Send port:" VerticalAlignment="Center" />
-                <TextBlock Text="{x:Bind ConnectionStatus.ReceivePortString, Mode=OneWay}" VerticalAlignment="Center" />
-            </StackPanel>
-            
-            <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
-                <FontIcon Glyph="&#xE930;" x:Name="UnitySuccess" Visibility="Collapsed" />
-                <FontIcon Glyph="&#xEA39;" x:Name="UnityError" Visibility="Collapsed" />
-                <ProgressRing x:Name="UnityProgress" IsActive="True" Visibility="Collapsed" />
-                <Button Command="{x:Bind StartUnityCommand}" >
-                    <Image Source="{StaticResource UnityImage}" Width="20" Height="20" />
-                </Button>
+            <NavigationView.MenuItems>
+                <NavigationViewItem Tag="HomePage" Content="Home" Icon="View" />
+                <NavigationViewItem Tag="ValuesPage" Content="Values" Icon="Repair" />
+            </NavigationView.MenuItems>
 
-                <Button Command="{x:Bind ToggleConsoleCommand}" >
-                    <FontIcon Glyph="&#xEC7A;" FontSize="20" />
-                </Button>
+            <NavigationView.FooterMenuItems>
 
-                <Button Command="{x:Bind InvokeSettingsCommand}" >
-                    <FontIcon Glyph="&#xE713;" FontSize="20" />
-                </Button>
-            </StackPanel>
-        </Grid>
+                <NavigationViewItem Tag="Connection" Content="Connection" IsEnabled="False">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind ConnectionStatus.ConnectionIcon, Mode=OneWay}" Foreground="{x:Bind ConnectionStatus.ConnectionColor, Mode=OneWay}" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-        <Border Grid.Row="1" Padding="12" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                <NavigationViewItem Tag="Unity" Content="Unity">
+                    <NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="/Assets/unity.png" Width="20" Height="20" Foreground="{x:Bind ConnectionStatus.UnityColor, Mode=OneWay}" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-                <local:ValueStatistics Grid.Row="0" />
-                <ScrollViewer Grid.Row="1"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
+                <NavigationViewItem Tag="Console" Content="Console">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEC7A;" FontSize="20" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-                    <Grid VerticalAlignment="Stretch">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="auto" />
-                        </Grid.RowDefinitions>
+                <NavigationViewItem Tag="SettingsPage" Content="Settings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-                        <local:Settings Grid.Row="1" />
+            </NavigationView.FooterMenuItems>
 
-                    </Grid>
-                </ScrollViewer>
-            </Grid>
-
-        </Border>
-
-        <Border Grid.Row="1" Grid.Column="1" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-            <local:AvatarVisualizerCanvas />
-        </Border>
-
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
     </Grid>
 </UserControl>

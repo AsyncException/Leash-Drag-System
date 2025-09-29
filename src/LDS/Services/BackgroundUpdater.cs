@@ -35,7 +35,6 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     private CancellationTokenSource _timerCts = new();
 
     private int _retryCount = 0;
-    private bool _isInUnityMode = false;
     private Task _leashTask = Task.CompletedTask;
     private Task _timerTask = Task.CompletedTask;
     private readonly SemaphoreSlim _stopStartSemaphore = new(1, 1);
@@ -146,7 +145,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     /// </summary>
     /// <param name="message"></param>
     void IRecipient<ToggleUnityMessage>.Receive(ToggleUnityMessage message) {
-        if (_isInUnityMode) {
+        if (ConnectionStatus.IsUnityMode) {
             _logger.LogInformation("Received StartUnityMessage, restarting restarting with VRChat client");
 
             _dispatcherQueue.TryEnqueue(() => {
@@ -172,7 +171,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
                     return false;
                 }
             }));
-            _isInUnityMode = false;
+            ConnectionStatus.IsUnityMode = false;
         }
         else {
             _logger.LogInformation("Received StartUnityMessage, restarting into Unity mode");
@@ -193,7 +192,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
                     return false;
                 }
             }));
-            _isInUnityMode = true;
+            ConnectionStatus.IsUnityMode = true;
         }
     }
 

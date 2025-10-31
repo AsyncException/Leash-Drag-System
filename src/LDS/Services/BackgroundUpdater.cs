@@ -153,47 +153,33 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
                 ConnectionStatus.SendPort = 0;
                 ConnectionStatus.ReceivePort = 0;
             });
+        }
 
-            message.Reply(Task.Run<bool>(async () => {
-                try {
-                    await _client.StopAsync();
-                    await StopLeash();
-                    await StopTimer();
+        message.Reply(Task.Run<bool>(async () => {
+            try {
+                await _client.StopAsync();
+                await StopLeash();
+                await StopTimer();
 
-                    MessageFilter filter = new();
-                    filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
+                MessageFilter filter = new();
+                filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
+
+                if (ConnectionStatus.IsUnityMode) {
                     _client.Start(filter, CancellationToken.None);
-
-                    return true;
                 }
-                catch (Exception ex) {
-                    _logger.LogError(ex, "Failed to switch to VRChat client");
-                    return false;
-                }
-            }));
-            ConnectionStatus.IsUnityMode = false;
-        }
-        else {
-            _logger.LogInformation("Received StartUnityMessage, restarting into Unity mode");
-            message.Reply(Task.Run<bool>(async () => {
-                try {
-                    await _client.StopAsync();
-                    await StopLeash();
-                    await StopTimer();
-
-                    MessageFilter filter = new();
-                    filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
+                else {
                     await _client.Start(new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9000), new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9001), filter, CancellationToken.None);
+                }
 
-                    return true;
-                }
-                catch (Exception ex) {
-                    _logger.LogError(ex, "Failed to switch to Unity client");
-                    return false;
-                }
-            }));
-            ConnectionStatus.IsUnityMode = true;
-        }
+                return true;
+            }
+            catch (Exception ex) {
+                _logger.LogError(ex, "Failed to switch to VRChat client");
+                return false;
+            }
+        }));
+
+        ConnectionStatus.IsUnityMode = !ConnectionStatus.IsUnityMode;
     }
 
     #region Leash stuff

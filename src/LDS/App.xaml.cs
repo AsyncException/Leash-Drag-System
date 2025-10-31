@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml;
 using Serilog;
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using VRChatOSCClient;
 using VRChatOSCClient.OpenVR;
 using Application = Microsoft.UI.Xaml.Application;
@@ -22,18 +23,11 @@ using Application = Microsoft.UI.Xaml.Application;
 
 namespace LDS;
 
-/// <summary>
-/// Provides application-specific behavior to supplement the default Application class.
-/// </summary>
 public partial class App : Application, IRecipient<InvokeExitMessage>
 {
     private Window? Window { get; set; }
     private IHost AppHost { get; }
 
-    /// <summary>
-    /// Initializes the singleton application object.  This is the first line of authored code
-    /// executed, and as such is the logical equivalent of main() or WinMain().
-    /// </summary>
     public App() {
         Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", AppContext.BaseDirectory);
 
@@ -83,15 +77,11 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
 
         Ioc.Default.ConfigureServices(AppHost.Services);
 
-        AppHost.Start();
+        Task.Run(async () => await AppHost.StartAsync()).GetAwaiter().GetResult();
 
         InitializeComponent();
     }
 
-    /// <summary>
-    /// Invoked when the application is launched.
-    /// </summary>
-    /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args) {
         Window = new MainWindow();
         Window.Activate();

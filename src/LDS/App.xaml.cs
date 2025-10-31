@@ -9,6 +9,8 @@ using LDS.TimerSystem;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Serilog;
 using System;
@@ -25,8 +27,12 @@ namespace LDS;
 
 public partial class App : Application, IRecipient<InvokeExitMessage>
 {
-    private Window? Window { get; set; }
     private IHost AppHost { get; }
+    public ILogger<App> Logger { get; init; }
+
+    private Window? Window { get; set; }
+    private DispatcherQueue DispatcherQueue { get; set; } = DispatcherQueue.GetForCurrentThread();
+
 
     public App() {
         Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", AppContext.BaseDirectory);
@@ -79,6 +85,10 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
 
         Task.Run(async () => await AppHost.StartAsync()).GetAwaiter().GetResult();
 
+        Logger = AppHost.Services.GetRequiredService<ILogger<App>>();
+
+        WeakReferenceMessenger.Default.RegisterAll(this);
+
         InitializeComponent();
     }
 
@@ -87,10 +97,25 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
         Window.Activate();
     }
 
+
+    private bool _exitReceived = false;
     void IRecipient<InvokeExitMessage>.Receive(InvokeExitMessage message) {
-        Exit();
-        message.Reply(null);
+        if (_exitReceived) { return; }
+        _exitReceived = true;
+
+        Logger.LogInformation("Exit requested by {SenderName}", message.Value.SenderName);
+
+        _ = Task.Run(async () => {
+            await AppHost.StopAsync();
+            await Log.CloseAndFlushAsync();
+
+            DispatcherQueue.TryEnqueue(() => {
+                Window?.Close();
+                Exit();
+            });
+        });
     }
 }
 
-internal class InvokeExitMessage : RequestMessage<object?>;
+internal class InvokeExitMessage(ExitMessageData value) : ValueChangedMessage<ExitMessageData>(value);
+internal record ExitMessageData(string SenderName);

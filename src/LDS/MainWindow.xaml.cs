@@ -1,9 +1,7 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.UI.Xaml;
-using Serilog;
+using CommunityToolkit.Mvvm.Messaging;
 using LDS.Services;
-using Microsoft.Extensions.Hosting;
-using System.Threading;
+using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -15,7 +13,6 @@ namespace LDS;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    private readonly IHostLifetime _lifeTime = Ioc.Default.GetRequiredService<IHostLifetime>();
     private readonly IAppResizeService _appResizeService = Ioc.Default.GetRequiredService<IAppResizeService>()!;
     private readonly IBackDropController _backDropController = Ioc.Default.GetRequiredService<IBackDropController>()!;
 
@@ -28,8 +25,5 @@ public sealed partial class MainWindow : Window
         Closed += CleanUp;
     }
 
-    public async void CleanUp(object sender, WindowEventArgs args) {
-        await _lifeTime.StopAsync(CancellationToken.None);
-        await Log.CloseAndFlushAsync();
-    }
+    public void CleanUp(object sender, WindowEventArgs args) => WeakReferenceMessenger.Default.Send<InvokeExitMessage>(new(new("MainWindow")));
 }

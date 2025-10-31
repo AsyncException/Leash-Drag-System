@@ -16,21 +16,13 @@ internal partial class OpenVRService(ILogger<OpenVRService> logger, OpenVRWrappe
     private readonly OpenVRWrapper _openVR = openVR;
     private readonly ILogger<OpenVRService> _logger = logger;
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) {
         _openVR.OnSteamVRFound += OnSteamVRFound;
         _openVR.OnShutdownReceived += OnShutdownReceived;
         _status.PropertyChanged += OnStatusPropertyChanged;
+        _openVR.Start();
 
-        try {
-            await _openVR.StartAndWaitAsync(stoppingToken);
-        }
-        catch (OpenVRException ex) when (ex.Error == Valve.VR.EVRInitError.Init_PathRegistryNotFound) {
-            //This most likely means SteamVR isnt installed. This should not crash the app.
-            _logger.LogError(ex, "Could not init OpenVR. OpenVRService will not be running");
-        }
-        catch (OpenVRException ex) {
-            _logger.LogCritical(ex, "Could not start OpenVRService");
-        }
+        return Task.CompletedTask;
     }
 
     private void OnStatusPropertyChanged(object? sender, PropertyChangedEventArgs e) {
@@ -43,7 +35,7 @@ internal partial class OpenVRService(ILogger<OpenVRService> logger, OpenVRWrappe
 
     private Task OnShutdownReceived(VREvent_t t, CancellationToken token) {
         if (_status.AutoStart) {
-            WeakReferenceMessenger.Default.Send<InvokeExitMessage>();
+            WeakReferenceMessenger.Default.Send<InvokeExitMessage>(new(new("OpenVR AutoStart Service")));
         }
 
         _status.IsOpenVRRunning = false;

@@ -37,7 +37,7 @@ This project was initially built for fun, but grew into a fully functioning desk
 - Slider-based settings to adjust thresholds for leash responsiveness.
 - A top-down visualizer showing the current leash vector and threshold zones.
 
-Full explanation on the [Wiki](https://github.com/AsyncException/VOL-VRChatOSCLeash/wiki/App-layout-and-explanation)
+Full explanation on the [Wiki](https://github.com/AsyncException/Leash-Drag-System/wiki/App-layout-and-explanation)
 
 ### The Unity project:
 - Contains the scenes and resources to create a untiy package with prefabs.

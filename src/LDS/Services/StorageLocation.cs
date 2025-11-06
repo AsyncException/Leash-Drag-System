@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.IO;
 
 namespace LDS.Services;
@@ -20,10 +21,12 @@ public static class StorageLocation
 
     public static void EnsureAppdataPathExists() {
         if (!Directory.Exists(GetAppdataPath())) {
+            Log.Logger.Debug("Creating AppData folder");
             Directory.CreateDirectory(GetAppdataPath());
         }
 
         if (!Directory.Exists(GetLogPath())) {
+            Log.Logger.Debug("Creating Log folder");
             Directory.CreateDirectory(GetLogPath());
         }
     }

@@ -27,22 +27,14 @@ namespace LDS;
 
 public partial class App : Application, IRecipient<InvokeExitMessage>
 {
-    private IHost AppHost { get; }
+    private IHost AppHost { get; init; }
     public ILogger<App> Logger { get; init; }
+    private DispatcherQueue DispatcherQueue { get; init; } = DispatcherQueue.GetForCurrentThread();
 
     private Window? Window { get; set; }
-    private DispatcherQueue DispatcherQueue { get; set; } = DispatcherQueue.GetForCurrentThread();
-
 
     public App() {
         Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", AppContext.BaseDirectory);
-
-        StorageLocation.EnsureAppdataPathExists();
-
-        if (!StorageLocation.ManifestPathExists()) {
-            AppManifest.Create("builtin", "leashdragsystem.async", "binary", "LDS.exe", true, "Leash Drag System", "Enable Leashes in VRChat over OSC")
-            .WriteToFile(StorageLocation.GetManifestPath());
-        }
 
         HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 
@@ -52,6 +44,14 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
             .WriteTo.DebugWindowSink(loggingStore)
             .CreateLogger();
 
+        StorageLocation.EnsureAppdataPathExists();
+
+        if (!StorageLocation.ManifestPathExists()) {
+            Log.Logger.Debug("Creating Manifest file");
+            AppManifest.Create("builtin", "leashdragsystem.async", "binary", "LDS.exe", true, "Leash Drag System", "Enable Leashes in VRChat over OSC")
+            .WriteToFile(StorageLocation.GetManifestPath());
+        }
+
         builder.Logging.AddSerilog();
         builder.Services.AddSerilog();
 
@@ -59,6 +59,7 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
         builder.Services.AddOpenVRClient(settings => settings.ManifestPath = StorageLocation.GetManifestPath());
         builder.Services.AddHostedService<BackgroundUpdater>();
         builder.Services.AddHostedService<OpenVRService>();
+        builder.Services.AddTransient(services => DispatcherQueue);
 
         builder.Services.AddTransient<IBackDropController, BackDropController>();
         builder.Services.AddTransient<IAppResizeService, AppResizeService>();
@@ -81,9 +82,13 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
 
         AppHost = builder.Build();
 
+        Log.Logger.Debug("AppHost was created");
+
         Ioc.Default.ConfigureServices(AppHost.Services);
 
+        Log.Logger.Debug("Waiting for background services to start");
         Task.Run(async () => await AppHost.StartAsync()).GetAwaiter().GetResult();
+        Log.Logger.Debug("background services started");
 
         Logger = AppHost.Services.GetRequiredService<ILogger<App>>();
 
@@ -93,8 +98,10 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args) {
+        Logger.LogDebug("OnLaunched called, MainWindow is starting");
         Window = new MainWindow();
         Window.Activate();
+        Logger.LogDebug("MainWindow activated");
     }
 
 

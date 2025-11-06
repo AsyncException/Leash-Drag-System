@@ -22,6 +22,8 @@ internal partial class OpenVRService(ILogger<OpenVRService> logger, OpenVRWrappe
         _status.PropertyChanged += OnStatusPropertyChanged;
         _openVR.Start();
 
+        _logger.LogDebug("OpenVR Service started");
+
         return Task.CompletedTask;
     }
 
@@ -34,7 +36,9 @@ internal partial class OpenVRService(ILogger<OpenVRService> logger, OpenVRWrappe
     }
 
     private Task OnShutdownReceived(VREvent_t t, CancellationToken token) {
+        _logger.LogDebug("OpenVR Shutdown received");
         if (_status.AutoStart) {
+            _logger.LogDebug("Starting shutdown because autostart is turned on");
             WeakReferenceMessenger.Default.Send<InvokeExitMessage>(new(new("OpenVR AutoStart Service")));
         }
 
@@ -45,6 +49,9 @@ internal partial class OpenVRService(ILogger<OpenVRService> logger, OpenVRWrappe
     private Task OnSteamVRFound(CancellationToken arg) {
         _status.IsOpenVRRunning = true;
         _status.AutoStart = _openVR.AutoLaunch;
+
+        _logger.LogDebug("OpenVR Client found");
+
         return Task.CompletedTask;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -12,8 +13,9 @@ public interface IAppResizeService
     void SetWindow(Window window);
 }
 
-public class AppResizeService(ILiteDatabase database) : IAppResizeService
+public class AppResizeService(ILogger<AppResizeService> logger , ILiteDatabase database) : IAppResizeService
 {
+    private readonly ILogger<AppResizeService> _logger = logger;
     private readonly ILiteCollection<AppSize> _collection = database.GetCollection<AppSize>();
 
     private static AppWindow GetAppWindow(Window window) {
@@ -25,10 +27,12 @@ public class AppResizeService(ILiteDatabase database) : IAppResizeService
     public void SetWindow(Window window) {
         window.Closed += Window_Closed;
 
-        AppSize? sizing = _collection.FindById(new Guid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1));
-        if (sizing is not null) {
+        AppSize? size = _collection.FindById(new Guid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1));
+        if (size is not null) {
+            _logger.LogDebug("Recovered previous app size. width: {width} height: {height}, position x: {posx} position y: {posy}", size.Width, size.Height, size.PositionX, size.PositionY);
+
             AppWindow appWindow = GetAppWindow(window);
-            appWindow.MoveAndResize(sizing);
+            appWindow.MoveAndResize(size);
         }
     }
 
@@ -36,6 +40,7 @@ public class AppResizeService(ILiteDatabase database) : IAppResizeService
         AppWindow appWindow = GetAppWindow((Window)sender);
         AppSize size = new RectInt32(appWindow.Position.X, appWindow.Position.Y, appWindow.Size.Width, appWindow.Size.Height);
         _collection.Upsert(size);
+        _logger.LogDebug("Saved window size. width: {width} height: {height}, position x: {posx} position y: {posy}", size.Width, size.Height, size.PositionX, size.PositionY);
     }
 }
 

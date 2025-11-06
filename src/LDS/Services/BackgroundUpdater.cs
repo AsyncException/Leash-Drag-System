@@ -18,7 +18,7 @@ namespace LDS.Services;
 
 internal partial class BackgroundUpdater : BackgroundService, IRecipient<EmergencyStopMessage>, IRecipient<StartLeashUpdater>, IRecipient<StopLeashUpdater>, IRecipient<StartTimerUpdater>, IRecipient<StopTimerUpdater>, IRecipient<ToggleUnityMessage>
 {
-    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _dispatcherQueue;
 
     private readonly ILogger _logger;
     private readonly IVRChatClient _client;
@@ -43,6 +43,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
         IVRChatClient client,
         ILogger<BackgroundUpdater> logger,
         ITimeDataProvider timeProvider,
+        DispatcherQueue dispatcherQueue,
 
         OSCParameters parameters,
         TimerStorage timerData,
@@ -55,6 +56,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
         _client = client;
         _logger = logger;
         _timeProvider = timeProvider;
+        _dispatcherQueue = dispatcherQueue;
 
         Parameters = parameters;
         TimerData = timerData;
@@ -71,6 +73,8 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
     }
 
     private Task ClientConnected(VRChatConnectionInfo info, CancellationToken token) {
+        _logger.LogInformation("VRChat client connected on Send Port {sendPort} and Receive Port {receivePort}", info.SendEndpoint.Port, info.ReceiveEndpoint.Port);
+
         _dispatcherQueue.TryEnqueue(() => {
             ConnectionStatus.IsConnected = true;
             ConnectionStatus.SendPort = info.SendEndpoint.Port;
@@ -155,6 +159,8 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
             });
         }
 
+        ConnectionStatus.IsUnityMode = !ConnectionStatus.IsUnityMode;
+
         message.Reply(Task.Run<bool>(async () => {
             try {
                 await _client.StopAsync();
@@ -165,10 +171,10 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
                 filter.SetParameterPattern("^([Ll]eash|[Tt]imer)");
 
                 if (ConnectionStatus.IsUnityMode) {
-                    _client.Start(filter, CancellationToken.None);
+                    await _client.Start(new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9000), new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9001), filter, CancellationToken.None);
                 }
                 else {
-                    await _client.Start(new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9000), new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 9001), filter, CancellationToken.None);
+                    _client.Start(filter, CancellationToken.None);
                 }
 
                 return true;
@@ -179,7 +185,7 @@ internal partial class BackgroundUpdater : BackgroundService, IRecipient<Emergen
             }
         }));
 
-        ConnectionStatus.IsUnityMode = !ConnectionStatus.IsUnityMode;
+        
     }
 
     #region Leash stuff

@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:LDS"
     xmlns:convert="using:LDS.Converters"
-    xmlns:models="using:LDS.Models"
+    xmlns:models="using:LDS.UI.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -46,7 +46,7 @@
 
                 <ToggleSwitch
             Header="Enable Counter"
-            IsOn="{x:Bind Thresholds.TimerEnabled, Mode=TwoWay}"
+            IsOn="{x:Bind Thresholds.CounterEnabled, Mode=TwoWay}"
             HorizontalAlignment="Center"
             MinWidth="0"
             Visibility="{x:Bind ApplicationSettings.GlobalEnableCounter, Converter={StaticResource Visibility}, Mode=OneWay}"
@@ -62,16 +62,16 @@
                 <StackPanel Orientation="Horizontal">
 
                     <Slider 
-                Value="{x:Bind Thresholds.TimerThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.PERCENTAGE_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.PERCENTAGE_MAX, Mode=OneTime}"
-                StepFrequency="{x:Bind models:ThresholdSettings.PERCENTAGE_STEP, Mode=OneTime}"
+                Value="{x:Bind Thresholds.CounterThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
+                Minimum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MAX, Mode=OneTime}"
+                StepFrequency="{x:Bind models:ThresholdsDataModel.PERCENTAGE_STEP, Mode=OneTime}"
                 Width="250"
                 />
 
 
                     <TextBlock
-                Text="{x:Bind Thresholds.TimerThreshold, Converter={StaticResource PercentageText}, Mode=OneWay}"
+                Text="{x:Bind Thresholds.CounterThreshold, Converter={StaticResource PercentageText}, Mode=OneWay}"
                 Foreground="{x:Bind models:Theme.TimerThreshold, Converter={StaticResource Brush}}"
                 VerticalAlignment="Center"
                 Padding="10 0 10 0"
@@ -88,15 +88,15 @@
                 <StackPanel Orientation="Horizontal">
 
                     <Slider 
-                Value="{x:Bind Thresholds.RunningMaxThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.PERCENTAGE_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.PERCENTAGE_MAX, Mode=OneTime}"
-                StepFrequency="{x:Bind models:ThresholdSettings.PERCENTAGE_STEP, Mode=OneTime}"
+                Value="{x:Bind Thresholds.RunningUpperThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
+                Minimum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MAX, Mode=OneTime}"
+                StepFrequency="{x:Bind models:ThresholdsDataModel.PERCENTAGE_STEP, Mode=OneTime}"
                 Width="250"
                 />
 
                     <TextBlock 
-                Text="{x:Bind Thresholds.RunningMaxThreshold, Converter={StaticResource PercentageText}, Mode=OneWay}"
+                Text="{x:Bind Thresholds.RunningUpperThreshold, Converter={StaticResource PercentageText}, Mode=OneWay}"
                 Foreground="{x:Bind models:Theme.RunningMaxThreshold, Converter={StaticResource Brush}}"
                 VerticalAlignment="Center"
                 Padding="10 0 10 0"
@@ -113,15 +113,15 @@
                 <StackPanel Orientation="Horizontal">
 
                     <Slider 
-                Value="{x:Bind Thresholds.RunningMinThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.PERCENTAGE_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.PERCENTAGE_MAX, Mode=OneTime}" 
-                StepFrequency="{x:Bind models:ThresholdSettings.PERCENTAGE_STEP, Mode=OneTime}"
+                Value="{x:Bind Thresholds.RunningLowerThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
+                Minimum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MAX, Mode=OneTime}" 
+                StepFrequency="{x:Bind models:ThresholdsDataModel.PERCENTAGE_STEP, Mode=OneTime}"
                 Width="250"
                 />
 
                     <TextBlock
-                Text="{x:Bind Thresholds.RunningMinThreshold, Converter={StaticResource PercentageText}, Mode=OneWay}"
+                Text="{x:Bind Thresholds.RunningLowerThreshold, Converter={StaticResource PercentageText}, Mode=OneWay}"
                 Foreground="{x:Bind models:Theme.RunningMinThreshold, Converter={StaticResource Brush}}"
                 VerticalAlignment="Center"
                 Padding="10 0 10 0"
@@ -139,9 +139,9 @@
 
                     <Slider 
                 Value="{x:Bind Thresholds.StretchThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.PERCENTAGE_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.PERCENTAGE_MAX, Mode=OneTime}"
-                StepFrequency="{x:Bind models:ThresholdSettings.PERCENTAGE_STEP, Mode=OneTime}"
+                Minimum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MAX, Mode=OneTime}"
+                StepFrequency="{x:Bind models:ThresholdsDataModel.PERCENTAGE_STEP, Mode=OneTime}"
                 Width="250"
                 />
 
@@ -163,9 +163,9 @@
 
                     <Slider 
                 Value="{x:Bind Thresholds.TurningThreshold, Converter={StaticResource Percentage}, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.PERCENTAGE_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.PERCENTAGE_MAX, Mode=OneTime}"
-                StepFrequency="{x:Bind models:ThresholdSettings.PERCENTAGE_STEP, Mode=OneTime}"
+                Minimum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MAX, Mode=OneTime}"
+                StepFrequency="{x:Bind models:ThresholdsDataModel.PERCENTAGE_STEP, Mode=OneTime}"
                 Width="250"
                 />
 
@@ -186,9 +186,9 @@
 
                     <Slider
                 Value="{x:Bind Thresholds.TurningGoal, Converter={StaticResource Percentage}, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.PERCENTAGE_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.PERCENTAGE_MAX, Mode=OneTime}"
-                StepFrequency="{x:Bind models:ThresholdSettings.PERCENTAGE_STEP, Mode=OneTime}"
+                Minimum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.PERCENTAGE_MAX, Mode=OneTime}"
+                StepFrequency="{x:Bind models:ThresholdsDataModel.PERCENTAGE_STEP, Mode=OneTime}"
                 Width="250"
                 />
 
@@ -210,9 +210,9 @@
 
                     <Slider
                 Value="{x:Bind Thresholds.TurningMultiplier, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.TURNING_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.TURNING_MAX, Mode=OneTime}"
-                StepFrequency="{x:Bind models:ThresholdSettings.TURNING_STEP, Mode=OneTime}"
+                Minimum="{x:Bind models:ThresholdsDataModel.TURNING_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.TURNING_MAX, Mode=OneTime}"
+                StepFrequency="{x:Bind models:ThresholdsDataModel.TURNING_STEP, Mode=OneTime}"
                 Width="250"
                 />
 
@@ -235,9 +235,9 @@
 
                     <Slider
                 Value="{x:Bind Thresholds.Zooming, Mode=TwoWay}"
-                Minimum="{x:Bind models:ThresholdSettings.ZOOMING_MIN, Mode=OneTime}"
-                Maximum="{x:Bind models:ThresholdSettings.ZOOMING_MAX, Mode=OneTime}"
-                StepFrequency="{x:Bind models:ThresholdSettings.ZOOMING_STEP, Mode=OneTime}"
+                Minimum="{x:Bind models:ThresholdsDataModel.ZOOMING_MIN, Mode=OneTime}"
+                Maximum="{x:Bind models:ThresholdsDataModel.ZOOMING_MAX, Mode=OneTime}"
+                StepFrequency="{x:Bind models:ThresholdsDataModel.ZOOMING_STEP, Mode=OneTime}"
                 Width="250"
                 />
 

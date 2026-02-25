@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
-using LDS.Services;
+using LDS.UI.Services;
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,

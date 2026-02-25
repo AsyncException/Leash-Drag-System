@@ -1,22 +1,12 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
+using LDS.Core;
 using LDS.Models;
 using LDS.Services;
-using Microsoft.UI.Xaml;
+using LDS.UI.Services;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,7 +18,7 @@ namespace LDS.Pages;
 public sealed partial class SettingsPage : Page
 {
     public OpenVRStatus OpenVRStatus { get; } = Ioc.Default.GetRequiredService<OpenVRStatus>();
-    public ApplicationSettings Settings { get; } = Ioc.Default.GetRequiredService<ApplicationSettings>();
+    public ApplicationSettingsDataModel Settings { get; } = Ioc.Default.GetRequiredService<ApplicationSettingsDataModel>();
 
     public MovementCalculatorType[] CalculatorOptions { get; } = Enum.GetValues<MovementCalculatorType>();
     public SettingsPage() => InitializeComponent();

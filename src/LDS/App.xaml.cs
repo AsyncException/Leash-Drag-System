@@ -1,11 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using LDS.LeashSystem;
-using LDS.Logger;
+using LDS.Core;
 using LDS.Models;
 using LDS.Services;
-using LDS.TimerSystem;
+using LDS.UI.Database.ApplicationSettings;
+using LDS.UI.Database.Counter;
+using LDS.UI.Database.Thresholds;
+using LDS.UI.Models;
+using LDS.UI.Services;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -38,10 +41,8 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
 
         HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 
-        DebugLoggingStore loggingStore = new();
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)
-            .WriteTo.DebugWindowSink(loggingStore)
             .CreateLogger();
 
         StorageLocation.EnsureAppdataPathExists();
@@ -57,28 +58,43 @@ public partial class App : Application, IRecipient<InvokeExitMessage>
 
         builder.Services.AddVRChatClient("Leash Drag System", IPAddress.Loopback);
         builder.Services.AddOpenVRClient(settings => settings.ManifestPath = StorageLocation.GetManifestPath());
-        builder.Services.AddHostedService<BackgroundUpdater>();
+
+        builder.Services.AddSingleton<BackgroundServiceController>();
+        builder.Services.AddSingleton<IController, BackgroundServiceController>(services => services.GetRequiredService<BackgroundServiceController>());
+
+        builder.Services.AddHostedService<VRChatBackgroundService>();
         builder.Services.AddHostedService<OpenVRService>();
+
         builder.Services.AddTransient(services => DispatcherQueue);
+        
+        builder.Services.AddSingleton<ILiteDatabase>(s => new LiteDatabase(StorageLocation.GetDatabasePath()));
 
         builder.Services.AddTransient<IBackDropController, BackDropController>();
         builder.Services.AddTransient<IAppResizeService, AppResizeService>();
-        builder.Services.AddSingleton<ILiteDatabase>(s => new LiteDatabase(StorageLocation.GetDatabasePath()));
 
         builder.Services.AddSingleton<IApplicationSettingsProvider, ApplicationSettingsProvider>();
-        builder.Services.AddSingleton<ApplicationSettings>(services => services.GetRequiredService<IApplicationSettingsProvider>().GetSettings());
+        builder.Services.AddSingleton<ApplicationSettingsDataModel>(services => 
+            services.GetRequiredService<IApplicationSettingsProvider>()
+                    .GetSettings()
+                    .Bind(services.GetRequiredService<IController>()));
 
         builder.Services.AddSingleton<IThresholdSettingsProvider, ThresholdSettingsProvider>();
-        builder.Services.AddSingleton<ThresholdSettings>(services => services.GetRequiredService<IThresholdSettingsProvider>().GetSettings());
+        builder.Services.AddSingleton<ThresholdsDataModel>(services => 
+            services.GetRequiredService<IThresholdSettingsProvider>()
+                    .GetThresholds()
+                    .Bind(services.GetRequiredService<IController>()));
 
-        builder.Services.AddSingleton<ITimeDataProvider, TimeDataProvider>();
-        builder.Services.AddSingleton<TimerStorage>(service => service.GetRequiredService<ITimeDataProvider>().GetTime());
+        builder.Services.AddSingleton<ICounterDataProvider, CounterDataProvider>();
+        builder.Services.AddSingleton<CounterDataModel>(service => 
+            service.GetRequiredService<ICounterDataProvider>()
+                   .GetTime()
+                   .Bind(service.GetRequiredService<IController>()));
 
-        builder.Services.AddSingleton<ConnectionStatus>();
-        builder.Services.AddSingleton<OSCParameters>();
-        builder.Services.AddSingleton<MovementDataViewModel>();
+        builder.Services.AddSingleton<MovementData>(services => new MovementData().Bind(services.GetRequiredService<IController>()));
+        builder.Services.AddSingleton<ConnectionDataModel>(services => new ConnectionDataModel().Bind(services.GetRequiredService<IController>()));
+        builder.Services.AddSingleton<OSCParameters>(services => new OSCParameters().Bind(services.GetRequiredService<IController>()));
+
         builder.Services.AddSingleton<OpenVRStatus>();
-        builder.Services.AddSingleton(loggingStore);
 
         AppHost = builder.Build();
 

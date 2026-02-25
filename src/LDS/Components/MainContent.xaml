@@ -6,7 +6,6 @@
     xmlns:local="using:LDS"
     xmlns:components="using:LDS.Components"
     xmlns:converters="using:LDS.Converters"
-    xmlns:utilities="using:LDS.Utilities"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -53,12 +52,6 @@
                 <NavigationViewItem Tag="Unity" Content="Unity">
                     <NavigationViewItem.Icon>
                         <BitmapIcon UriSource="/Assets/unity.png" Width="20" Height="20" Foreground="{x:Bind ConnectionStatus.UnityColor, Mode=OneWay}" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Tag="Console" Content="Console">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEC7A;" FontSize="20" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 

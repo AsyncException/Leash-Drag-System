@@ -42,8 +42,8 @@
             </Grid.RowDefinitions>
             
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Grid.Row="0">
-                <ToggleSwitch Header="Position Layer" IsOn="{x:Bind Settings.ShowPositionLayer, Mode=TwoWay}" HorizontalAlignment="Right" MinWidth="0"/>
-                <ToggleSwitch Header="Stretch Layer" IsOn="{x:Bind Settings.ShowStretchLayer, Mode=TwoWay}" HorizontalAlignment="Right" MinWidth="0"/>
+                <ToggleSwitch Header="Position Layer" IsOn="{x:Bind Thresholds.ShowPositionLayer, Mode=TwoWay}" HorizontalAlignment="Right" MinWidth="0"/>
+                <ToggleSwitch Header="Stretch Layer" IsOn="{x:Bind Thresholds.ShowStretchLayer, Mode=TwoWay}" HorizontalAlignment="Right" MinWidth="0"/>
             </StackPanel>
 
             <ItemsControl Grid.Row="1" ItemsSource="{x:Bind LegendItems}" ItemTemplate="{StaticResource LegendItemTemplate}" HorizontalAlignment="Right" VerticalAlignment="Top"/>

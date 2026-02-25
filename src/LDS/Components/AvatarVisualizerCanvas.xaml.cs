@@ -9,6 +9,8 @@ using System.ComponentModel;
 using System.Numerics;
 using LDS.Models;
 using Windows.UI;
+using LDS.UI.Models;
+using Microsoft.UI.Xaml;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -17,8 +19,8 @@ namespace LDS;
 public sealed partial class AvatarVisualizerCanvas : UserControl
 {
     private OSCParameters OSCParameters { get; } = Ioc.Default.GetRequiredService<OSCParameters>();
-    private ThresholdSettings Settings { get; } = Ioc.Default.GetRequiredService<ThresholdSettings>();
-    private ApplicationSettings ApplicationSettings { get; } = Ioc.Default.GetRequiredService<ApplicationSettings>();
+    private ThresholdsDataModel Thresholds { get; } = Ioc.Default.GetRequiredService<ThresholdsDataModel>();
+    private ApplicationSettingsDataModel ApplicationSettings { get; } = Ioc.Default.GetRequiredService<ApplicationSettingsDataModel>();
 
     public ObservableCollection<LegendItem> LegendItems { get; } = [
         new("Counter Threshold", Theme.TimerThreshold, "The threshold for the timer to start counting."),
@@ -35,14 +37,12 @@ public sealed partial class AvatarVisualizerCanvas : UserControl
 
     public AvatarVisualizerCanvas() {
         InitializeComponent();
-        Settings.PropertyChanged += Redraw;
-        OSCParameters.PropertyChanged += Redraw;
-        ApplicationSettings.PropertyChanged += Redraw;
-    }
-
-    private void Redraw(object? sender, PropertyChangedEventArgs e) {
-        PlotCanvas.Invalidate();
-        ScaleCanvas.Invalidate();
+        DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
+        timer.Tick += (s, e) => {
+            PlotCanvas.Invalidate();
+            ScaleCanvas.Invalidate();
+        };
+        timer.Start();
     }
 
     private void PlotCanvas_Draw(CanvasControl sender, CanvasDrawEventArgs args) {
@@ -54,13 +54,13 @@ public sealed partial class AvatarVisualizerCanvas : UserControl
             args.DrawingSession,
             Center: new(width / 2, height / 2),
             Size: Math.Min(width, height),
-            Zoom: Settings.Zooming);
+            Zoom: Thresholds.Zooming);
 
         ds.Clear(Colors.Transparent);
         ds.DrawLine(context.Center.X, 0, context.Center.X, height, Color.FromArgb(50, 169, 169, 169));
         ds.DrawLine(0, context.Center.Y, width, context.Center.Y, Color.FromArgb(50, 169, 169, 169));
 
-        if (Settings.ShowPositionLayer && ApplicationSettings.GlobalEnableLeash) {
+        if (Thresholds.ShowPositionLayer && ApplicationSettings.GlobalEnableLeash) {
             //Circle representing Left Collider
             context.DrawCircle(new Vector2(-1f, 0f), 1.5f, Theme.Colliders);
 
@@ -72,26 +72,26 @@ public sealed partial class AvatarVisualizerCanvas : UserControl
 
             //Circle representing Front Collider
             context.DrawCircle(new Vector2(0f, 1f), 1.5f, Theme.Colliders);
-            context.DrawCircle(new Vector2(0f, 1f), (1.5f - Settings.TurningGoal * 1.5f), Theme.TurningGoal);
+            context.DrawCircle(new Vector2(0f, 1f), (1.5f - Thresholds.TurningGoal * 1.5f), Theme.TurningGoal);
         }
 
         //Plot the settings
 
-        if(Settings.ShowStretchLayer && ApplicationSettings.GlobalEnableCounter) {
+        if(Thresholds.ShowStretchLayer && ApplicationSettings.GlobalEnableCounter) {
             //Plot counter threshold
-            context.DrawCircle(Vector2.Zero, Settings.TimerThreshold, Theme.TimerThreshold);
+            context.DrawCircle(Vector2.Zero, Thresholds.CounterThreshold, Theme.TimerThreshold);
         }
         
-        if (Settings.ShowStretchLayer && ApplicationSettings.GlobalEnableLeash) {
+        if (Thresholds.ShowStretchLayer && ApplicationSettings.GlobalEnableLeash) {
             //Plot running range
-            context.DrawCircle(Vector2.Zero, Settings.RunningMinThreshold, Theme.RunningMinThreshold);
-            context.DrawCircle(Vector2.Zero, Settings.RunningMaxThreshold, Theme.RunningMaxThreshold);
+            context.DrawCircle(Vector2.Zero, Thresholds.RunningLowerThreshold, Theme.RunningMinThreshold);
+            context.DrawCircle(Vector2.Zero, Thresholds.RunningUpperThreshold, Theme.RunningMaxThreshold);
 
             //Plot turning threshold
-            context.DrawCircle(Vector2.Zero, Settings.TurningThreshold, Theme.TurningTreshold);
+            context.DrawCircle(Vector2.Zero, Thresholds.TurningThreshold, Theme.TurningTreshold);
 
             //Plot Stretch threshold
-            context.DrawCircle(Vector2.Zero, Settings.StretchThreshold, Theme.StretchThreshold);
+            context.DrawCircle(Vector2.Zero, Thresholds.StretchThreshold, Theme.StretchThreshold);
         }
 
         //Plot avatar position
@@ -101,13 +101,13 @@ public sealed partial class AvatarVisualizerCanvas : UserControl
         float vertical = Math.Clamp(OSCParameters.FrontDistance - OSCParameters.BackDistance, -1f, 1f);
         float horizontal = Math.Clamp(OSCParameters.RightDistance - OSCParameters.LeftDistance, -1f, 1f);
 
-        if (Settings.ShowPositionLayer) {
+        if (Thresholds.ShowPositionLayer) {
             //Draw position
             context.PlotPoint(new Vector2(horizontal, vertical), 25, Theme.LeashPosition);
         }
 
         //Draw stretch position
-        if (Settings.ShowStretchLayer) {
+        if (Thresholds.ShowStretchLayer) {
             Vector2 direction = new(horizontal, vertical);
             if (direction != Vector2.Zero) { direction = Vector2.Normalize(direction); }
             direction *= OSCParameters.Stretch;
@@ -130,20 +130,20 @@ public sealed partial class AvatarVisualizerCanvas : UserControl
 
         if (ApplicationSettings.GlobalEnableCounter) {
             //Draw timer threshold
-            context.DrawMarker(Settings.TimerThreshold * 100, Theme.TimerThreshold);
+            context.DrawMarker(Thresholds.CounterThreshold * 100, Theme.TimerThreshold);
         }
 
         if(ApplicationSettings.GlobalEnableLeash) {
             //Draw running range
-            context.DrawMarker(Settings.RunningMinThreshold * 100, Theme.RunningMinThreshold);
-            context.DrawBlock(Settings.RunningMinThreshold * 100, Settings.RunningMaxThreshold * 100, Theme.RunningMinThreshold);
-            context.DrawMarker(Settings.RunningMaxThreshold * 100, Theme.RunningMaxThreshold);
+            context.DrawMarker(Thresholds.RunningLowerThreshold * 100, Theme.RunningMinThreshold);
+            context.DrawBlock(Thresholds.RunningLowerThreshold * 100, Thresholds.RunningUpperThreshold * 100, Theme.RunningMinThreshold);
+            context.DrawMarker(Thresholds.RunningUpperThreshold * 100, Theme.RunningMaxThreshold);
 
             //Draw turning threshold
-            context.DrawMarker(Settings.TurningThreshold * 100, Theme.TurningTreshold);
+            context.DrawMarker(Thresholds.TurningThreshold * 100, Theme.TurningTreshold);
 
             //Draw stretch threshold
-            context.DrawMarker(Settings.StretchThreshold * 100, Theme.StretchThreshold);
+            context.DrawMarker(Thresholds.StretchThreshold * 100, Theme.StretchThreshold);
 
             //Draw current stretch
             context.DrawBlock(0, OSCParameters.Stretch * 100, Theme.CurrentStretch);

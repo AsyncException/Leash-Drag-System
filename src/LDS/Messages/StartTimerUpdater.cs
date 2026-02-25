@@ -1,3 +1,3 @@
-﻿namespace LDS.Messages;
+﻿namespace LDS.UI.Messages;
 
 public record StartTimerUpdater();

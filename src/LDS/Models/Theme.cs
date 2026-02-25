@@ -2,7 +2,7 @@
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace LDS.Models;
+namespace LDS.UI.Models;
 
 public static class Theme
 {

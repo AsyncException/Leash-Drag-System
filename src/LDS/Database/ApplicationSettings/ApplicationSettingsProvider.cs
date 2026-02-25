@@ -2,7 +2,7 @@
 using LDS.Models;
 using Microsoft.Extensions.Logging;
 
-namespace LDS.Services;
+namespace LDS.UI.Database.ApplicationSettings;
 
 public interface IApplicationSettingsProvider
 {
@@ -10,16 +10,16 @@ public interface IApplicationSettingsProvider
     /// Fetch application settings from the database.
     /// </summary>
     /// <returns></returns>
-    ApplicationSettings GetSettings();
+    ApplicationSettingsDataModel GetSettings();
 }
 
 public class ApplicationSettingsProvider(ILiteDatabase database, ILogger<ApplicationSettingsProvider> logger) : IApplicationSettingsProvider
 {
     private readonly ILogger<ApplicationSettingsProvider> _logger = logger;
-    private readonly ILiteCollection<ApplicationSettings> _collection = database.GetCollection<ApplicationSettings>(nameof(ApplicationSettings));
+    private readonly ILiteCollection<ApplicationSettingsDataModel> _collection = database.GetCollection<ApplicationSettingsDataModel>(nameof(ApplicationSettingsDataModel));
 
-    public ApplicationSettings GetSettings() {
-        ApplicationSettings? settings = _collection.FindById(ThresholdSettings.Target);
+    public ApplicationSettingsDataModel GetSettings() {
+        ApplicationSettingsDataModel? settings = _collection.FindById(ApplicationSettingsDataModel.Target);
 
         if (settings is null) {
             settings = new();
@@ -33,7 +33,7 @@ public class ApplicationSettingsProvider(ILiteDatabase database, ILogger<Applica
         return settings;
     }
 
-    private void SaveChanges(ApplicationSettings settings) {
+    private void SaveChanges(ApplicationSettingsDataModel settings) {
         _collection?.Update(settings);
         _logger.LogDebug("Saved changes to ApplicationSettings");
     }

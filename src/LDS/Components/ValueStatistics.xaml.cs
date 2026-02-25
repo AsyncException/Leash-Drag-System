@@ -1,21 +1,24 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using LDS.LeashSystem;
-using LDS.Messages;
+using LDS.Core;
 using LDS.Models;
+using LDS.UI.Models;
 using Microsoft.UI.Xaml.Controls;
 
 namespace LDS;
 
 public sealed partial class ValueStatistics : UserControl
 {
-    public ApplicationSettings ApplicationSettings { get; } = Ioc.Default.GetRequiredService<ApplicationSettings>();
+    public MovementData MovementData { get; } = Ioc.Default.GetRequiredService<MovementData>();
     public OSCParameters OscParameters { get; } = Ioc.Default.GetRequiredService<OSCParameters>();
-    public MovementDataViewModel MovementData { get; } = Ioc.Default.GetRequiredService<MovementDataViewModel>();
-    public TimerStorage TimerStorage { get; } = Ioc.Default.GetRequiredService<TimerStorage>();
+    public CounterDataModel TimerStorage { get; } = Ioc.Default.GetRequiredService<CounterDataModel>();
+    public ThresholdsDataModel ThresholdsData { get; } = Ioc.Default.GetRequiredService<ThresholdsDataModel>();
+    public ApplicationSettingsDataModel ApplicationSettings { get; } = Ioc.Default.GetRequiredService<ApplicationSettingsDataModel>();
 
     public ValueStatistics() => InitializeComponent();
 
-    [RelayCommand] public static void EmergencyStop() => WeakReferenceMessenger.Default.Send<EmergencyStopMessage>();
+    [RelayCommand] public void EmergencyStop() {
+        ThresholdsData.LeashEnabled = false;
+        ThresholdsData.CounterEnabled = false;
+    }
 }

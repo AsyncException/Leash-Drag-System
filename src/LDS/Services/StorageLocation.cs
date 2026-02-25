@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace LDS.Services;
+namespace LDS.UI.Services;
 public static class StorageLocation
 {
     const string APPNAME = "Leash Drag System";

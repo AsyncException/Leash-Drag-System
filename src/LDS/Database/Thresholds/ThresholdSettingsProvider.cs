@@ -1,24 +1,25 @@
-﻿using LDS.Models;
+﻿using LDS.Core.CommunicationObjects;
+using LDS.UI.Models;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 
-namespace LDS.Services;
+namespace LDS.UI.Database.Thresholds;
 
 public interface IThresholdSettingsProvider
 {
-    ThresholdSettings GetSettings();
+    ThresholdsDataModel GetThresholds();
 }
 
 public class ThresholdSettingsProvider(ILiteDatabase database, ILogger<ThresholdSettingsProvider> logger) : IThresholdSettingsProvider
 {
     private readonly ILogger<ThresholdSettingsProvider> _logger = logger;
-    private readonly ILiteCollection<ThresholdSettings> _collection = database.GetCollection<ThresholdSettings>(nameof(ThresholdSettings));
+    private readonly ILiteCollection<ThresholdsDataModel> _collection = database.GetCollection<ThresholdsDataModel>(nameof(Thresholds));
 
-    public ThresholdSettings GetSettings() {
-        ThresholdSettings settings = _collection.FindById(ThresholdSettings.Target);
+    public ThresholdsDataModel GetThresholds() {
+        ThresholdsDataModel settings = _collection.FindById(ThresholdsDataModel.Target);
 
         if (settings is null) {
-            settings = new ThresholdSettings();
+            settings = new ThresholdsDataModel();
             _collection.Insert(settings);
         }
 
@@ -29,7 +30,7 @@ public class ThresholdSettingsProvider(ILiteDatabase database, ILogger<Threshold
         return settings;
     }
 
-    private void SaveChanges(ThresholdSettings settings) {
+    private void SaveChanges(ThresholdsDataModel settings) {
         _collection?.Update(settings);
         _logger.LogInformation("Saved changes to ThresholdSettings");
     }

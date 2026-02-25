@@ -1,15 +1,11 @@
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
-using System.Threading.Tasks;
 using System;
 using LDS.Models;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.Mvvm.Messaging;
-using LDS.Messages;
 using LDS.Pages;
 using Microsoft.Extensions.Logging;
-using CommunityToolkit.Mvvm.ComponentModel;
 using System.Linq;
+using LDS.Core;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -17,10 +13,9 @@ using System.Linq;
 namespace LDS.Components;
 
 public sealed partial class MainContent : UserControl {
+    public IController Controller { get; } = Ioc.Default.GetRequiredService<IController>();
     public ILogger<MainContent> Logger { get; set; } = Ioc.Default.GetRequiredService<ILogger<MainContent>>();
-    public ConnectionStatus ConnectionStatus { get; } = Ioc.Default.GetRequiredService<ConnectionStatus>();
-
-    private DebugWindow? _debugWindow;
+    public ConnectionDataModel ConnectionStatus { get; } = Ioc.Default.GetRequiredService<ConnectionDataModel>();
 
     public MainContent() {
         InitializeComponent();
@@ -33,13 +28,7 @@ public sealed partial class MainContent : UserControl {
         //Filter out buttons
         if (page is "Unity") {
             Navigation.SelectedItem = GetPreviousPage();
-            StartUnity();
-            return;
-        }
-
-        if(page is "Console") {
-            Navigation.SelectedItem = GetPreviousPage();
-            ToggleConsole();
+            Controller.ToggleUnity();
             return;
         }
 
@@ -56,30 +45,6 @@ public sealed partial class MainContent : UserControl {
             Type currentPage = ContentFrame.Content.GetType();
             string name = currentPage.Name;
             return Navigation.MenuItems.Cast<NavigationViewItem>().First(i => i.Tag?.ToString() == name);
-        }
-    }
-
-    public void ToggleConsole() {
-        if (_debugWindow is null) {
-            _debugWindow = new DebugWindow();
-            _debugWindow.Closed += (s, e) => {
-                _debugWindow = null;
-            };
-
-            _debugWindow.Activate();
-        }
-        else {
-            _debugWindow.Activate();
-        }
-    }
-
-
-    public async void StartUnity() {
-        try {
-            bool success = await WeakReferenceMessenger.Default.Send(new ToggleUnityMessage()).Response;
-        }
-        catch (Exception ex) {
-            Logger.LogError(ex, "Failed to toggle unity mode");
         }
     }
 }

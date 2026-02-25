@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Windows.Storage.Streams;
 
-namespace LDS.Utilities;
+namespace LDS.UI.Utilities;
 
 class ImageLoader : BitmapSource
 {

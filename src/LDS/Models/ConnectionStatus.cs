@@ -1,11 +1,24 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.UI;
+using LDS.Core;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
 namespace LDS.Models;
-public partial class ConnectionStatus : ObservableObject
+public partial class ConnectionDataModel : ObservableObject
 {
+    private IController? _controller;
+    public ConnectionDataModel Bind(IController controller) {
+        _controller = controller;
+
+        _controller.ConnectionStatus.OnIsConnectedChanged += (s,a) => IsConnected = _controller.ConnectionStatus.IsConnected;
+        _controller.ConnectionStatus.OnIsUnityConnectedChanged += (s,a) => IsUnityMode = _controller.ConnectionStatus.IsUnityConnected;
+        _controller.ConnectionStatus.OnSendPortChanged += (s,a) => SendPort = _controller.ConnectionStatus.SendPort;
+        _controller.ConnectionStatus.OnReceivePortChanged += (s,a) => ReceivePort = _controller.ConnectionStatus.ReceivePort;
+
+        return this;
+    }
+
     [ObservableProperty, NotifyPropertyChangedFor(nameof(ConnectionIcon), nameof(ConnectionColor))]
     public partial bool IsConnected { get; set; } = false;
 

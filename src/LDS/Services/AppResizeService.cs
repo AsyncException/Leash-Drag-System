@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using System;
 using Windows.Graphics;
 
-namespace LDS.Services;
+namespace LDS.UI.Services;
 
 public interface IAppResizeService
 {

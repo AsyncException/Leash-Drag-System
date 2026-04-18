@@ -21,6 +21,7 @@ public class VRChatBackgroundService : BackgroundService
 
         _controller.StopInvoked += StopInvoked;
         _controller.ToggleUnityInvoked += ToggleUnityInvoked;
+        _controller.EmergencyStopInvoked += EmergencyStop;
 
         _controller.Settings.OnGlobalEnableLeashChanged += ToggleLeash;
         _controller.Settings.OnGlobalEnableCounterChanged += ToggleCounter;
@@ -32,6 +33,11 @@ public class VRChatBackgroundService : BackgroundService
     protected override Task ExecuteAsync(CancellationToken stoppingToken) {
         _client.Start(new(), stoppingToken);
         return Task.CompletedTask;
+    }
+
+    private void EmergencyStop(object? sender, EventArgs e) {
+        _controller.Thresholds.LeashEnabled = false;
+        _controller.Thresholds.CounterEnabled = false;
     }
 
     private async void ToggleUnityInvoked(object? sender, EventArgs e) {
@@ -109,10 +115,12 @@ public class VRChatBackgroundService : BackgroundService
 
         if (_controller.Settings.GlobalEnableLeash) {
             _leashTaskController = new LeashTaskController(_controller, _client, _logger);
+            _leashTaskController.Start();
         }
 
         if(_controller.Settings.GlobalEnableCounter) {
             _counterTaskController = new CounterTaskController(_controller, _client, _logger);
+            _counterTaskController.Start();
         }
 
         return Task.CompletedTask;
@@ -127,7 +135,7 @@ public class VRChatBackgroundService : BackgroundService
         };
 
         _controller.Parameters[parameter.Name] = parameter;
-        _controller.InvokeParameterChanged(parameter.Name);
+        _controller.InvokeParameterChanged(parameter);
         return Task.CompletedTask;
     }
 }
@@ -153,6 +161,14 @@ public class LeashTaskController(BackgroundServiceController controller, IVRChat
             BaseLeashCalculator.MovementData previousData = new();
             while (await timer.WaitForNextTickAsync(_cts.Token)) {
                 if (!_controller.Thresholds.LeashEnabled) {
+                    if(previousData is not { HorizontalLook: 0, HorizontalOffset: 0, VerticalOffset: 0, ShouldRun: false }) {
+                        previousData = new();
+                        _client.Send(new Message("/input/Vertical", [0]));
+                        _client.Send(new Message("/input/Horizontal", [0]));
+                        _client.Send(new Message("/input/LookHorizontal", [0]));
+                        _client.Send(new Message("/input/Run", [false]));
+                    }
+
                     continue;
                 }
 
@@ -179,6 +195,11 @@ public class LeashTaskController(BackgroundServiceController controller, IVRChat
                 _client.Send(new Message("/input/Horizontal", [currentData.HorizontalOffset]));
                 _client.Send(new Message("/input/LookHorizontal", [currentData.HorizontalLook]));
                 _client.Send(new Message("/input/Run", [currentData.ShouldRun]));
+
+                _controller.ControllerData.VerticalOffset = currentData.VerticalOffset;
+                _controller.ControllerData.HorizontalOffset = currentData.HorizontalOffset;
+                _controller.ControllerData.HorizontalLook = currentData.HorizontalLook;
+                _controller.ControllerData.ShouldRun = currentData.ShouldRun;
             }
         }
         catch (TaskCanceledException) { }

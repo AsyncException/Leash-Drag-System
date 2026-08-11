@@ -3,7 +3,7 @@
 namespace LDS.Core;
 
 public interface IController {
-    public event EventHandler<string> ParameterChanged; 
+    public event EventHandler<Parameter> ParameterChanged; 
     public IReadOnlyDictionary<string, Parameter> Parameters { get; }
     public IConnectionStatus ConnectionStatus { get; }
     public IControllerData ControllerData { get; }
@@ -12,13 +12,14 @@ public interface IController {
 
     public void InvokeStop();
     public void ToggleUnity();
+    public void EmergencyStop();
 }
 
 public sealed class BackgroundServiceController : IController {
-    public event EventHandler<string> ParameterChanged = delegate { };
+    public event EventHandler<Parameter> ParameterChanged = delegate { };
     IReadOnlyDictionary<string, Parameter> IController.Parameters => Parameters;
     internal Dictionary<string, Parameter> Parameters { get; } = [];
-    internal void InvokeParameterChanged(string parameter) => ParameterChanged.Invoke(this, parameter);
+    internal void InvokeParameterChanged(Parameter parameter) => ParameterChanged.Invoke(this, parameter);
 
     IConnectionStatus IController.ConnectionStatus => ConnectionStatus;
     public ConnectionStatus ConnectionStatus { get; } = new();

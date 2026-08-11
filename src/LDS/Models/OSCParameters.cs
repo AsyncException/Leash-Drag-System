@@ -28,31 +28,31 @@ public partial class OSCParameters : ObservableObject
         return this;
     }
 
-    private void ParameterChanged(object? sender, string e) {
-        switch (e) {
+    private void ParameterChanged(object? sender, Parameter parameter) {
+        switch (parameter.Name) {
             case ENABLED:
-                Enabled = _controller?.Parameters[ENABLED]?.GetValue<bool>() ?? false;
+                Enabled = parameter.GetValue<bool>();
                 break;
             case IS_GRABBED:
-                IsGrabbed = _controller?.Parameters[IS_GRABBED]?.GetValue<bool>() ?? false;
+                IsGrabbed = parameter.GetValue<bool>();
                 break;
             case ANGLE:
-                Angle = _controller?.Parameters[ANGLE]?.GetValue<float>() ?? 0f;
+                Angle = parameter.GetValue<float>();
                 break;
             case STRETCH:
-                Stretch = _controller?.Parameters[STRETCH]?.GetValue<float>() ?? 0f;
+                Stretch = parameter.GetValue<float>();
                 break;
             case FRONT_COLLIDER:
-                FrontDistance = _controller?.Parameters[FRONT_COLLIDER]?.GetValue<float>() ?? 0f;
+                FrontDistance = parameter.GetValue<float>();
                 break;
             case BACK_COLLIDER:
-                BackDistance = _controller?.Parameters[BACK_COLLIDER]?.GetValue<float>() ?? 0f;
+                BackDistance = parameter.GetValue<float>();
                 break;
             case RIGHT_COLLIDER:
-                RightDistance = _controller?.Parameters[RIGHT_COLLIDER]?.GetValue<float>() ?? 0f;
+                RightDistance = parameter.GetValue<float>();
                 break;
             case LEFT_COLLIDER:
-                LeftDistance = _controller?.Parameters[LEFT_COLLIDER]?.GetValue<float>() ?? 0f;
+                LeftDistance = parameter.GetValue<float>();
                 break;
         }
     }

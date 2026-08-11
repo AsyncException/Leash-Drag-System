@@ -1,8 +1,25 @@
 ﻿namespace LDS.Core.CommunicationObjects;
 
 public sealed class Thresholds {
-    public bool CounterEnabled { get; set; }
-    public bool LeashEnabled { get; set; }
+
+    public event EventHandler<bool> OnCounterEnabledChanged = delegate { };
+    public bool CounterEnabled {
+        get;
+        set {
+            field = value;
+            OnCounterEnabledChanged?.Invoke(this, value);
+        }
+    }
+
+
+    public event EventHandler<bool> OnLeashEnabledChanged = delegate { };
+    public bool LeashEnabled {
+        get;
+        set {
+            field = value;
+            OnLeashEnabledChanged?.Invoke(this, value);
+        }
+    }
 
     public float CounterThreshold { get; set; }
     public float RunningUpperThreshold { get; set; }

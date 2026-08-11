@@ -5,7 +5,6 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="src/LDS.Core/LDS.Core.csproj" Id="9dd5e5ae-0aa8-4cb5-b11b-77cf74687777" />
-  <Project Path="src/LDS.TUI/LDS.TUI.csproj" Id="34cc742c-2b3f-4382-906c-2acee4a51540" />
   <Project Path="src/LDS/LDS.UI.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />

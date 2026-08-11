@@ -578,3 +578,5 @@ InitTestScene*.unity*
 /unity/ProjectSettings
 /unity/UserSettings
 /unity/Packages
+.junie/mcp/mcp.json
+.junie/mcp/mcp.json.bak

@@ -5,11 +5,5 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="src/LDS.Core/LDS.Core.csproj" Id="9dd5e5ae-0aa8-4cb5-b11b-77cf74687777" />
-  <Project Path="src/LDS/LDS.UI.csproj">
-    <Platform Solution="*|ARM64" Project="ARM64" />
-    <Platform Solution="*|x64" Project="x64" />
-    <Platform Solution="*|x86" Project="x86" />
-    <Deploy />
-  </Project>
   <Project Path="submodule/VRChatOSCClient/src/VRChatOSCClient/VRChatOSCClient.csproj" />
 </Solution>

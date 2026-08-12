@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Project Path="../../submodule/VRChatOSCClient/src/VRChatOSCClient/VRChatOSCClient.csproj" />
+  <Project Path="../LDS.Core/LDS.Core.csproj" />
+  <Project Path="LDS.Interface/LDS.Interface.csproj">
+    <Deploy />
+  </Project>
+</Solution>

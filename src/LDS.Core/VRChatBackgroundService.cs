@@ -5,16 +5,16 @@ using VRChatOSCClient.OSCConnections;
 
 namespace LDS.Core;
 
-public class VRChatBackgroundService : BackgroundService
+public sealed class VrChatBackgroundService : BackgroundService
 {
-    private readonly IVRChatClient _client;
+    private readonly IVrChatClient _client;
     private readonly BackgroundServiceController _controller;
-    private readonly ILogger<VRChatBackgroundService> _logger;
+    private readonly ILogger<VrChatBackgroundService> _logger;
 
     private LeashTaskController? _leashTaskController;
     private CounterTaskController? _counterTaskController;
 
-    public VRChatBackgroundService(IVRChatClient client, BackgroundServiceController controller, ILogger<VRChatBackgroundService> logger) {
+    public VrChatBackgroundService(IVrChatClient client, BackgroundServiceController controller, ILogger<VrChatBackgroundService> logger) {
         _client = client;
         _logger = logger;
         _controller = controller;
@@ -26,7 +26,7 @@ public class VRChatBackgroundService : BackgroundService
         _controller.Settings.OnGlobalEnableCounterChanged += ToggleCounter;
 
         _client.OnParameterReceived += ParameterReceived;
-        _client.OnVRChatClientFound += ClientFound;
+        _client.OnVrChatClientFound += ClientFound;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken) {
@@ -102,7 +102,7 @@ public class VRChatBackgroundService : BackgroundService
         }
     }
 
-    private Task ClientFound(VRChatOSCClient.OSCQuery.VRChatConnectionInfo connectionInfo, CancellationToken cancellationToken) {
+    private Task ClientFound(VRChatOSCClient.OSCQuery.VrChatConnectionInfo connectionInfo, CancellationToken cancellationToken) {
         _controller.ConnectionStatus.IsConnected = true;
         _controller.ConnectionStatus.SendPort = connectionInfo.SendEndpoint.Port;
         _controller.ConnectionStatus.ReceivePort = connectionInfo.ReceiveEndpoint.Port;
@@ -132,42 +132,46 @@ public class VRChatBackgroundService : BackgroundService
     }
 }
 
-public class LeashTaskController(BackgroundServiceController controller, IVRChatClient client, ILogger<VRChatBackgroundService> logger)
+public class LeashTaskController(BackgroundServiceController controller, IVrChatClient client, ILogger<VrChatBackgroundService> logger)
 {
-    private readonly IVRChatClient _client = client;
-    private readonly ILogger<VRChatBackgroundService> _logger = logger;
-    private readonly BackgroundServiceController _controller = controller;
-
     private readonly CancellationTokenSource _cts = new();
 
     private Task _task = Task.CompletedTask;
     private int _retryCount = 0;
 
-    public void Start() => _task = LeashTask();
-    public void Stop() => _cts?.Cancel();
+    public void Start()
+    {
+        _task = LeashTask();
+    }
+
+    public async Task Stop()
+    {
+        await _cts.CancelAsync();
+        await _task;
+    }
 
     private async Task LeashTask() {
         try {
             using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(50));
 
-            BaseLeashCalculator.MovementData previousData = new();
+            var previousData = new BaseLeashCalculator.MovementData();
             while (await timer.WaitForNextTickAsync(_cts.Token)) {
-                if (!_controller.Thresholds.LeashEnabled) {
+                if (!controller.Thresholds.LeashEnabled) {
                     continue;
                 }
 
-                ParameterMapping parameters = new(_controller);
+                var parameters = new ParameterMapping(controller);
 
                 if (ShouldReset(parameters)) {
                     await ResetLeash();
                     continue;
                 }
 
-                BaseLeashCalculator.MovementData currentData = _controller.Settings.CalculatorType switch {
-                    MovementCalculatorType.Location => PositionLeashCalculator.GetLeashData(_controller, parameters, ref previousData),
-                    MovementCalculatorType.Stretch => StretchLeashCalculator.GetLeashData(_controller, parameters, ref previousData),
-                    MovementCalculatorType.Combined => StretchPositionLeashCalculator.GetLeashData(_controller, parameters, ref previousData),
-                    _ => PositionLeashCalculator.GetLeashData(_controller, parameters, ref previousData),
+                var currentData = controller.Settings.CalculatorType switch {
+                    MovementCalculatorType.Location => PositionLeashCalculator.GetLeashData(controller, parameters, ref previousData),
+                    MovementCalculatorType.Stretch => StretchLeashCalculator.GetLeashData(controller, parameters, ref previousData),
+                    MovementCalculatorType.Combined => StretchPositionLeashCalculator.GetLeashData(controller, parameters, ref previousData),
+                    _ => PositionLeashCalculator.GetLeashData(controller, parameters, ref previousData),
                 };
 
                 if (currentData.Equals(previousData)) {
@@ -175,16 +179,16 @@ public class LeashTaskController(BackgroundServiceController controller, IVRChat
                 }
 
                 previousData = currentData;
-                _client.Send(new Message("/input/Vertical", [currentData.VerticalOffset]));
-                _client.Send(new Message("/input/Horizontal", [currentData.HorizontalOffset]));
-                _client.Send(new Message("/input/LookHorizontal", [currentData.HorizontalLook]));
-                _client.Send(new Message("/input/Run", [currentData.ShouldRun]));
+                client.Send(new Message("/input/Vertical", [currentData.VerticalOffset]));
+                client.Send(new Message("/input/Horizontal", [currentData.HorizontalOffset]));
+                client.Send(new Message("/input/LookHorizontal", [currentData.HorizontalLook]));
+                client.Send(new Message("/input/Run", [currentData.ShouldRun]));
             }
         }
         catch (TaskCanceledException) { }
         catch (OperationCanceledException) { }
         catch (Exception ex) {
-            _logger.LogError(ex, "An error occured in the LeashTask of the background updater");
+            logger.LogError(ex, "An error occured in the LeashTask of the background updater");
             throw;
         }
     }
@@ -194,7 +198,7 @@ public class LeashTaskController(BackgroundServiceController controller, IVRChat
     /// </summary>
     /// <returns></returns>
     private bool ShouldReset(ParameterMapping parameters) {
-        bool shouldReset = _controller.Settings.EnableToggleOnNullInput && BaseLeashCalculator.IsZeroColliderDistance(parameters);
+        var shouldReset = controller.Settings.EnableToggleOnNullInput && BaseLeashCalculator.IsZeroColliderDistance(parameters);
         if (!shouldReset && _retryCount > 0) {
             _retryCount = 0;
         }
@@ -206,34 +210,42 @@ public class LeashTaskController(BackgroundServiceController controller, IVRChat
     /// Attempts to reset the colliders by toggling the leash off and on up to 3 times.
     /// </summary>
     /// <returns></returns>
-    private async Task ResetLeash() {
-        if (_retryCount < 3) {
-            _client.SendParameterChange(ParameterMapping.ENABLED, false);
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            _client.SendParameterChange(ParameterMapping.ENABLED, true);
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            _retryCount++;
-            _logger.LogInformation("Leash reset attempt {attempt}", _retryCount);
-        }
-        else if (_retryCount == 3) {
-            _retryCount++;
-            _logger.LogInformation("Unable to automatically reset the leash");
+    private async Task ResetLeash()
+    {
+        switch (_retryCount)
+        {
+            case < 3:
+                client.SendParameterChange(ParameterMapping.ENABLED, false);
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                client.SendParameterChange(ParameterMapping.ENABLED, true);
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                _retryCount++;
+                logger.LogInformation("Leash reset attempt {attempt}", _retryCount);
+                break;
+            case 3:
+                _retryCount++;
+                logger.LogInformation("Unable to automatically reset the leash");
+                break;
         }
     }
 }
 
-public class CounterTaskController(BackgroundServiceController controller, IVRChatClient client, ILogger<VRChatBackgroundService> logger)
+public class CounterTaskController(BackgroundServiceController controller, IVrChatClient client, ILogger<VrChatBackgroundService> logger)
 {
-    private readonly IVRChatClient _client = client;
-    private readonly ILogger<VRChatBackgroundService> _logger = logger;
-    private readonly BackgroundServiceController _controller = controller;
-
     private readonly CancellationTokenSource _cts = new();
 
     private Task _task = Task.CompletedTask;
 
-    public void Start() => _task = TimerTask();
-    public void Stop() => _cts?.Cancel();
+    public void Start()
+    {
+        _task = TimerTask();
+    }
+
+    public async Task Stop()
+    {
+        await _cts.CancelAsync();
+        await _task;
+    }
 
     /// <summary>
     /// The main timer loop task that will update send data to vrchat.
@@ -243,25 +255,25 @@ public class CounterTaskController(BackgroundServiceController controller, IVRCh
         try {
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(1));
             while (await timer.WaitForNextTickAsync(_cts.Token)) {
-                var isGrabbed = _controller.Parameters.GetValueOrDefault(ParameterMapping.IS_GRABBED)?.GetValue<bool>() ?? false;
-                var stretch = _controller.Parameters.GetValueOrDefault(ParameterMapping.STRETCH)?.GetValue<float>() ?? 0;
+                var isGrabbed = controller.Parameters.GetValueOrDefault(ParameterMapping.IS_GRABBED)?.GetValue<bool>() ?? false;
+                var stretch = controller.Parameters.GetValueOrDefault(ParameterMapping.STRETCH)?.GetValue<float>() ?? 0;
 
-                if (!_controller.Thresholds.CounterEnabled || !isGrabbed || stretch < _controller.Thresholds.CounterThreshold) {
+                if (!controller.Thresholds.CounterEnabled || !isGrabbed || stretch < controller.Thresholds.CounterThreshold) {
                     continue;
                 }
 
-                TimeSpan timeSpan = new TimeSpan(_controller.ControllerData.Hours, _controller.ControllerData.Minutes, _controller.ControllerData.Seconds);
-                timeSpan = new(timeSpan.Ticks + TimeSpan.TicksPerSecond);
+                var timeSpan = new TimeSpan(controller.ControllerData.Hours, controller.ControllerData.Minutes, controller.ControllerData.Seconds);
+                timeSpan = new TimeSpan(timeSpan.Ticks + TimeSpan.TicksPerSecond);
 
-                _controller.ControllerData.Hours = timeSpan.Hours;
-                _controller.ControllerData.Minutes = timeSpan.Minutes;
-                _controller.ControllerData.Seconds = timeSpan.Seconds;
+                controller.ControllerData.Hours = timeSpan.Hours;
+                controller.ControllerData.Minutes = timeSpan.Minutes;
+                controller.ControllerData.Seconds = timeSpan.Seconds;
             }
         }
         catch (TaskCanceledException) { }
         catch (OperationCanceledException) { }
         catch (Exception ex) {
-            _logger.LogError(ex, "Error occured in the TimerTask of the background updater");
+            logger.LogError(ex, "Error occured in the TimerTask of the background updater");
         }
     }
 }
